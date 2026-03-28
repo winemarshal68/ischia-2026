@@ -210,7 +210,7 @@ footer span{color:var(--sunset);}
 <!-- PIN LOCK -->
 <div id="pin-overlay">
   <div id="pin-bg-blur"></div>
-  <div id="pin-panel">
+  <div id="pin-panel" role="dialog" aria-modal="true" aria-labelledby="pin-title" aria-describedby="pin-sub">
     <div id="pin-eyebrow">Private · Ischia 2026</div>
     <div id="pin-title">Marshal &amp; <em>Heidi</em></div>
     <div id="pin-sub">Enter PIN to continue</div>
@@ -232,7 +232,7 @@ footer span{color:var(--sunset);}
       <div class="pkey" data-d="8">8</div>
       <div class="pkey" data-d="9">9</div>
       <div class="pkey zero" data-d="0">0</div>
-      <div class="pkey del" data-d="del">⌫</div>
+      <div class="pkey del" data-d="del" aria-label="Delete">⌫</div>
     </div>
     <div id="pin-error"></div>
   </div>
