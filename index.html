@@ -176,6 +176,33 @@ body{background:var(--sand);color:var(--text);font-family:'DM Mono',monospace;fo
 }
 footer{background:var(--night);color:rgba(200,232,245,.35);text-align:center;padding:22px;font-size:11px;letter-spacing:.1em;}
 footer span{color:var(--sunset);}
+
+/* ── PIN LOCK ─────────────────────────────────────────── */
+#pin-overlay{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:var(--night);transition:opacity .35s;}
+#pin-overlay.fade-out{opacity:0;pointer-events:none;}
+#pin-overlay.hidden{display:none;}
+#pin-bg-blur{position:absolute;inset:0;
+  background:radial-gradient(ellipse 90% 70% at 75% 110%,rgba(42,109,158,.5) 0%,transparent 55%),
+             radial-gradient(ellipse 50% 40% at 15% 85%,rgba(200,112,58,.22) 0%,transparent 50%);}
+#pin-panel{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:28px;padding:44px 36px;background:rgba(13,31,45,.88);border:1px solid rgba(74,159,200,.2);border-radius:20px;backdrop-filter:blur(20px);box-shadow:0 24px 80px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.04);width:min(340px,90vw);}
+#pin-eyebrow{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--sea-light);}
+#pin-title{font-family:'Cormorant Garamond',serif;font-size:34px;font-weight:300;color:var(--white);text-align:center;line-height:1.1;margin-top:-8px;}
+#pin-title em{font-style:italic;color:var(--sunset);}
+#pin-sub{font-size:11px;color:rgba(200,232,245,.45);letter-spacing:.06em;margin-top:-12px;}
+#pin-dots{display:flex;gap:14px;}
+.pdot{width:13px;height:13px;border-radius:50%;border:1.5px solid rgba(74,159,200,.4);background:transparent;transition:background .12s,border-color .12s,box-shadow .12s;}
+.pdot.on{background:var(--sea-light);border-color:var(--sea-light);box-shadow:0 0 8px rgba(74,159,200,.4);}
+#pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;width:100%;}
+.pkey{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:11px;color:var(--white);font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;padding:13px 0;text-align:center;cursor:pointer;transition:background .1s,border-color .1s;user-select:none;-webkit-user-select:none;}
+.pkey:hover{background:rgba(74,159,200,.18);border-color:rgba(74,159,200,.3);}
+.pkey:active,.pkey.pressed{background:rgba(74,159,200,.3);}
+.pkey.del{font-family:'DM Mono',monospace;font-size:14px;color:rgba(200,232,245,.5);}
+.pkey.zero{grid-column:2;}
+.pkey:disabled,.pkey[data-disabled]{pointer-events:none;opacity:.4;}
+#pin-error{font-size:11px;color:var(--dusk);letter-spacing:.06em;text-align:center;opacity:0;transition:opacity .2s;min-height:16px;}
+#pin-error.show{opacity:1;}
+@keyframes pin-shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+.shake{animation:pin-shake .35s ease;}
 </style>
 </head>
 <body>
