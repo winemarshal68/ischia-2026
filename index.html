@@ -178,7 +178,7 @@ footer{background:var(--night);color:rgba(200,232,245,.35);text-align:center;pad
 footer span{color:var(--sunset);}
 
 /* ── PIN LOCK ─────────────────────────────────────────── */
-#pin-overlay{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:var(--night);transition:opacity .35s;}
+#pin-overlay{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(13,31,45,0.88);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);transition:opacity .35s;}
 #pin-overlay.fade-out{opacity:0;pointer-events:none;}
 #pin-overlay.hidden{display:none;}
 #pin-bg-blur{position:absolute;inset:0;
@@ -234,7 +234,7 @@ footer span{color:var(--sunset);}
       <div class="pkey zero" data-d="0">0</div>
       <div class="pkey del" data-d="del" aria-label="Delete">⌫</div>
     </div>
-    <div id="pin-error"></div>
+    <div id="pin-error" aria-live="assertive" aria-atomic="true"></div>
   </div>
 </div>
 
