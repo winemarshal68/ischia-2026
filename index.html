@@ -184,7 +184,7 @@ footer span{color:var(--sunset);}
 #pin-bg-blur{position:absolute;inset:0;
   background:radial-gradient(ellipse 90% 70% at 75% 110%,rgba(42,109,158,.5) 0%,transparent 55%),
              radial-gradient(ellipse 50% 40% at 15% 85%,rgba(200,112,58,.22) 0%,transparent 50%);}
-#pin-panel{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:28px;padding:44px 36px;background:rgba(13,31,45,.88);border:1px solid rgba(74,159,200,.2);border-radius:20px;backdrop-filter:blur(20px);box-shadow:0 24px 80px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.04);width:min(340px,90vw);}
+#pin-panel{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:28px;padding:44px 36px;background:rgba(13,31,45,.88);border:1px solid rgba(74,159,200,.2);border-radius:20px;-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);box-shadow:0 24px 80px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.04);width:min(340px,90vw);}
 #pin-eyebrow{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--sea-light);}
 #pin-title{font-family:'Cormorant Garamond',serif;font-size:34px;font-weight:300;color:var(--white);text-align:center;line-height:1.1;margin-top:-8px;}
 #pin-title em{font-style:italic;color:var(--sunset);}
@@ -202,7 +202,7 @@ footer span{color:var(--sunset);}
 #pin-error{font-size:11px;color:var(--dusk);letter-spacing:.06em;text-align:center;opacity:0;transition:opacity .2s;min-height:16px;}
 #pin-error.show{opacity:1;}
 @keyframes pin-shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
-.shake{animation:pin-shake .35s ease;}
+.pin-shake{animation:pin-shake .35s ease;}
 </style>
 </head>
 <body>
