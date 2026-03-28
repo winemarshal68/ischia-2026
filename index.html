@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ischia 2026 — Marshal & Heidi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sea:#1a4d6e;--sea-mid:#2a6d9e;--sea-light:#4a9fc8;--foam:#c8e8f5;
+  --sand:#f5efe6;--sand-dark:#e8ddd0;--dusk:#c8703a;--dusk-deep:#9a4e20;
+  --sunset:#e8904a;--night:#0d1f2d;--white:#faf9f7;
+  --text:#1c2b38;--muted:#6b8499;--border:rgba(26,77,110,0.13);
+  --marshal:#1a4d6e;--heidi:#2a7a5a;--both:#6a3a7a;--green-ok:#1f7a4a;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--sand);color:var(--text);font-family:'DM Mono',monospace;font-size:13px;line-height:1.6;}
+
+.hero{background:var(--night);color:var(--white);padding:56px 48px 44px;position:relative;overflow:hidden;}
+.hero::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 90% 70% at 75% 110%,rgba(42,109,158,.55) 0%,transparent 55%),
+             radial-gradient(ellipse 50% 40% at 15% 85%,rgba(200,112,58,.28) 0%,transparent 50%);}
+.hero-inner{position:relative;max-width:1140px;margin:0 auto;display:grid;grid-template-columns:1fr auto;gap:24px;align-items:end;}
+.hero-eyebrow{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--sea-light);margin-bottom:14px;}
+.hero h1{font-family:'Cormorant Garamond',serif;font-size:clamp(48px,7vw,90px);font-weight:300;line-height:.92;letter-spacing:-.02em;}
+.hero h1 em{font-style:italic;color:var(--sunset);}
+.hero-sub{font-size:11px;color:rgba(200,232,245,.65);margin-top:18px;letter-spacing:.06em;}
+.travelers-row{display:flex;gap:10px;margin-top:22px;flex-wrap:wrap;}
+.traveler{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.13);border-radius:30px;padding:5px 13px 5px 5px;font-size:11px;color:var(--white);}
+.tdot{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:500;}
+.tdot-m{background:var(--marshal);}.tdot-h{background:var(--heidi);}
+.hero-badge{background:rgba(232,144,74,.15);border:1px solid rgba(232,144,74,.35);border-radius:8px;padding:12px 18px;text-align:right;align-self:start;margin-top:4px;}
+.hero-badge-label{font-size:10px;color:rgba(200,232,245,.5);letter-spacing:.1em;text-transform:uppercase;}
+.hero-badge-val{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:var(--sunset);line-height:1.1;}
+
+.stat-bar{background:var(--sea);display:flex;overflow-x:auto;}
+.stat{flex:1;min-width:90px;padding:14px 16px;border-right:1px solid rgba(255,255,255,.08);text-align:center;}
+.stat:last-child{border-right:none;}
+.stat-num{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:var(--white);line-height:1;}
+.stat-label{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:rgba(200,232,245,.55);margin-top:3px;}
+
+.tabs-wrap{background:var(--white);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;}
+.tabs{max-width:1140px;margin:0 auto;display:flex;padding:0 48px;overflow-x:auto;}
+.tab{padding:13px 20px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;white-space:nowrap;background:none;border-top:none;border-left:none;border-right:none;font-family:'DM Mono',monospace;}
+.tab:hover{color:var(--text);}
+.tab.active{color:var(--sea);border-bottom-color:var(--sea);}
+
+.page{display:none;}.page.active{display:block;}
+
+.main{max-width:1140px;margin:0 auto;padding:36px 48px 80px;display:grid;grid-template-columns:1fr 310px;gap:32px;align-items:start;}
+.section-title{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+
+/* timeline */
+.day-header{display:flex;align-items:baseline;gap:10px;padding:18px 0 8px;position:sticky;top:44px;background:var(--sand);z-index:9;cursor:pointer;user-select:none;}
+.day-header:hover .day-date{color:var(--sea);}
+.day-date{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;transition:color .2s;}
+.day-name-lbl{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);}
+.day-sunset{margin-left:auto;font-size:11px;color:var(--dusk);display:flex;align-items:center;gap:5px;white-space:nowrap;}
+.day-sunset::before{content:'';display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--sunset);}
+.day-toggle{font-size:14px;color:var(--muted);margin-left:6px;transition:transform .25s;display:inline-block;}
+.day-toggle.open{transform:rotate(180deg);}
+.events{padding-left:20px;border-left:1px solid var(--border);display:flex;flex-direction:column;gap:8px;margin-bottom:6px;}
+.events.collapsed{display:none;}
+.day-divider{height:1px;background:var(--border);margin:2px 0 2px 20px;}
+
+.event{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;gap:12px;align-items:flex-start;position:relative;transition:border-color .18s,box-shadow .18s;cursor:pointer;}
+.event:hover{border-color:rgba(26,77,110,.3);box-shadow:0 2px 14px rgba(26,77,110,.08);}
+.event::before{content:'';position:absolute;left:-25px;top:50%;transform:translateY(-50%);width:7px;height:7px;border-radius:50%;background:var(--sand);border:2px solid var(--border);}
+.event.tbd{background:repeating-linear-gradient(45deg,var(--white),var(--white) 7px,#f5efe6 7px,#f5efe6 14px);border-style:dashed;}
+.event.confirmed{border-left:3px solid var(--sea);}
+.event.dinner-res{border-left:3px solid var(--dusk);}
+.event.hl{border:1.5px solid var(--dusk);}
+.event-expanded{display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);}
+.event-expanded.open{display:block;}
+.event-links{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.el{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:500;padding:4px 10px;border-radius:20px;border:1px solid var(--border);color:var(--sea);text-decoration:none;background:var(--white);transition:background .15s,border-color .15s;letter-spacing:.04em;}
+.el:hover{background:var(--foam);border-color:var(--sea-light);}
+.el.d{color:var(--dusk);border-color:rgba(200,112,58,.3);}.el.d:hover{background:#fdf0e8;border-color:var(--dusk);}
+.el.g{color:var(--green-ok);border-color:rgba(31,122,74,.25);}.el.g:hover{background:#edf6f0;border-color:var(--green-ok);}
+.info-grid{display:grid;grid-template-columns:auto 1fr;gap:3px 14px;margin-top:4px;font-size:11px;}
+.ik{color:var(--muted);font-size:10px;letter-spacing:.07em;text-transform:uppercase;padding:2px 0;white-space:nowrap;}
+.iv{color:var(--text);padding:2px 0;}
+
+.event-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+.im{background:rgba(26,77,110,.1);}.ih{background:rgba(42,122,90,.1);}
+.ihotel{background:rgba(42,122,90,.12);}.itbd{background:rgba(200,112,58,.15);}
+.iferry{background:rgba(74,159,200,.15);}.iboat{background:rgba(26,77,110,.1);}
+.idinner{background:rgba(200,112,58,.15);}.ibus{background:rgba(200,112,58,.1);}
+.ifree{background:rgba(26,77,110,.05);}
+.event-body{flex:1;min-width:0;}
+.event-title{font-size:12px;font-weight:500;color:var(--text);margin-bottom:2px;display:flex;flex-wrap:wrap;align-items:center;gap:5px;}
+.event-sub{font-size:11px;color:var(--muted);margin-bottom:2px;}
+.event-detail{font-size:11px;color:var(--muted);}
+
+.badge{display:inline-block;font-size:10px;font-weight:500;padding:1px 6px;border-radius:4px;}
+.bb{background:rgba(26,77,110,.1);color:var(--marshal);}
+.bg{background:rgba(42,122,90,.1);color:var(--heidi);}
+.ba{background:rgba(200,112,58,.18);color:var(--dusk-deep);}
+.bp{background:rgba(106,58,122,.1);color:var(--both);}
+.bc{background:rgba(200,112,58,.15);color:var(--dusk-deep);}
+.bt{background:rgba(74,159,200,.15);color:var(--sea);}
+.bok{background:rgba(31,122,74,.12);color:var(--green-ok);}
+.who{display:inline-block;font-size:10px;font-weight:500;padding:1px 7px;border-radius:10px;}
+.wm{background:rgba(26,77,110,.12);color:var(--marshal);}
+.wh{background:rgba(42,122,90,.12);color:var(--heidi);}
+.wb{background:rgba(106,58,122,.12);color:var(--both);}
+.tbd-badge{display:inline-block;font-size:10px;padding:1px 7px;border-radius:4px;background:rgba(200,112,58,.18);color:var(--dusk-deep);font-weight:500;}
+.p1{font-size:10px;background:rgba(26,77,110,.1);color:var(--marshal);padding:1px 5px;border-radius:3px;}
+.connector{display:flex;align-items:center;gap:8px;padding:2px 0 2px 12px;font-size:10px;color:var(--muted);}
+.connector::before{content:'↓';color:rgba(26,77,110,.25);}
+.bal{background:rgba(200,112,58,.09);border:1px solid rgba(200,112,58,.28);border-radius:6px;padding:6px 10px;font-size:11px;color:var(--dusk-deep);margin-top:4px;}
+.mstar{color:#a0282a;font-size:11px;font-weight:500;}
+
+/* sidebar */
+.sidebar{display:flex;flex-direction:column;gap:18px;}
+.scard{background:var(--white);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.scard-head{padding:13px 16px 10px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.scard-title{font-family:'Cormorant Garamond',serif;font-size:14px;font-weight:400;letter-spacing:.04em;}
+.scard-body{padding:12px 16px;}
+.brow{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);font-size:11px;}
+.brow:last-child{border-bottom:none;padding-bottom:0;}
+.brow-label{color:var(--muted);line-height:1.4;}
+.brow-link{font-size:10px;color:var(--sea);text-decoration:none;display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border:1px solid rgba(26,77,110,.2);border-radius:10px;margin-top:3px;}
+.brow-link:hover{background:var(--foam);}
+.todo-item{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);font-size:11px;cursor:pointer;user-select:none;}
+.todo-item:last-child{border-bottom:none;padding-bottom:0;}
+.tbox{width:14px;height:14px;border:1.5px solid var(--border);border-radius:3px;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:background .15s;}
+.tbox.done{background:var(--sea);border-color:var(--sea);}
+.tbox.done::after{content:'✓';color:#fff;font-size:9px;}
+.done-text{text-decoration:line-through;color:var(--muted);}
+.sun-head{display:grid;grid-template-columns:1fr 1fr 1fr;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding-bottom:7px;border-bottom:1px solid var(--border);margin-bottom:3px;}
+.srow{display:grid;grid-template-columns:1fr 1fr 1fr;padding:5px 0;border-bottom:1px solid var(--border);font-size:11px;}
+.srow:last-child{border-bottom:none;}
+.srow-d{color:var(--muted);}.srow-s{font-weight:500;color:var(--dusk);}.srow-t{color:var(--sea);font-weight:500;}
+.srow.ok .srow-t{color:var(--green-ok);}
+.sun-note{margin-top:9px;font-size:10px;color:var(--muted);line-height:1.6;}
+
+/* resources */
+.resources-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;max-width:1140px;margin:0 auto;padding:36px 48px 80px;}
+.res-card{background:var(--white);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:box-shadow .2s;}
+.res-card:hover{box-shadow:0 4px 20px rgba(26,77,110,.1);}
+.res-card-head{padding:14px 16px 10px;border-bottom:1px solid var(--border);}
+.res-cat{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:4px;}
+.res-name{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:400;}
+.res-card-body{padding:12px 16px;font-size:11px;color:var(--muted);line-height:1.7;}
+.res-links{display:flex;flex-direction:column;gap:6px;margin-top:10px;}
+.res-link{display:inline-flex;align-items:center;gap:6px;color:var(--sea);text-decoration:none;font-size:11px;padding:5px 10px;border:1px solid rgba(26,77,110,.18);border-radius:6px;transition:background .15s;}
+.res-link:hover{background:var(--foam);border-color:var(--sea-light);}
+.res-link.dk{color:var(--dusk);border-color:rgba(200,112,58,.25);}.res-link.dk:hover{background:#fdf0e8;}
+.res-link.gk{color:var(--green-ok);border-color:rgba(31,122,74,.2);}.res-link.gk:hover{background:#edf6f0;}
+.rs{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:500;padding:2px 8px;border-radius:10px;margin-bottom:8px;}
+.rs-ok{background:rgba(31,122,74,.1);color:var(--green-ok);}
+.rs-tbd{background:rgba(200,112,58,.15);color:var(--dusk-deep);}
+.dr{display:flex;gap:6px;font-size:11px;color:var(--muted);padding:2px 0;}
+.dk2{min-width:64px;}
+
+/* budget */
+.budget-wrap{max-width:1140px;margin:0 auto;padding:36px 48px 80px;display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+.budget-card{background:var(--white);border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.budget-head{padding:14px 16px;border-bottom:1px solid var(--border);font-family:'Cormorant Garamond',serif;font-size:16px;}
+.budget-row{display:flex;justify-content:space-between;padding:8px 16px;border-bottom:1px solid var(--border);font-size:12px;}
+.budget-row:last-child{border-bottom:none;}
+.budget-label{color:var(--muted);}
+.budget-amount{font-weight:500;}
+.budget-amount.pd{color:var(--green-ok);}
+.budget-amount.tb{color:var(--dusk);}
+.budget-total{background:var(--sea);color:#fff;padding:10px 16px;display:flex;justify-content:space-between;font-weight:500;font-size:13px;}
+.budget-note{grid-column:1/-1;background:var(--white);border:1px solid var(--border);border-radius:12px;padding:16px;font-size:11px;color:var(--muted);line-height:1.8;}
+
+@media(max-width:900px){
+  .main,.resources-grid,.budget-wrap{grid-template-columns:1fr;padding:24px 20px 60px;}
+  .hero{padding:36px 20px 32px;}.hero-inner{grid-template-columns:1fr;}
+  .hero-badge{display:none;}.tabs{padding:0 20px;}.budget-wrap{grid-template-columns:1fr;}
+}
+footer{background:var(--night);color:rgba(200,232,245,.35);text-align:center;padding:22px;font-size:11px;letter-spacing:.1em;}
+footer span{color:var(--sunset);}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <div>
+      <p class="hero-eyebrow">Trip Itinerary · Summer 2026</p>
+      <h1>Ischia<br><em>a Mare</em></h1>
+      <p class="hero-sub">25 June – 5 July 2026 &nbsp;·&nbsp; Naples & Forio d'Ischia, Italy</p>
+      <div class="travelers-row">
+        <div class="traveler"><div class="tdot tdot-m">MW</div>Marshal Walker · Granada</div>
+        <div class="traveler"><div class="tdot tdot-h">HM</div>Heidi Melbostad · Montreal</div>
+      </div>
+    </div>
+    <div class="hero-badge">
+      <div class="hero-badge-label">Total nights</div><div class="hero-badge-val">10</div>
+      <div class="hero-badge-label" style="margin-top:12px;">Avg sunset</div><div class="hero-badge-val">20:33</div>
+    </div>
+  </div>
+</header>
+
+<div class="stat-bar">
+  <div class="stat"><div class="stat-num">7</div><div class="stat-label">On Ischia</div></div>
+  <div class="stat"><div class="stat-num">3</div><div class="stat-label">In Naples</div></div>
+  <div class="stat"><div class="stat-num">8</div><div class="stat-label">Flights</div></div>
+  <div class="stat"><div class="stat-num">1</div><div class="stat-label">Hike planned</div></div>
+  <div class="stat"><div class="stat-num">1★</div><div class="stat-label">Dinner booked</div></div>
+  <div class="stat"><div class="stat-num">19:45</div><div class="stat-label">Dinner time</div></div>
+</div>
+
+<div class="tabs-wrap">
+  <div class="tabs">
+    <button class="tab active" onclick="showPage('itinerary',this)">Itinerary</button>
+    <button class="tab" onclick="showPage('resources',this)">Places & Links</button>
+    <button class="tab" onclick="showPage('transport',this)">Getting Around</button>
+    <button class="tab" onclick="showPage('budget',this)">Budget</button>
+  </div>
+</div>
+
+<!-- ITINERARY -->
+<div id="itinerary" class="page active">
+<div class="main">
+<div>
+  <p class="section-title">Day by Day — click any event for details & links</p>
+  <div id="timeline"></div>
+</div>
+<div class="sidebar">
+  <div class="scard">
+    <div class="scard-head"><div class="scard-title">Booking References</div></div>
+    <div class="scard-body">
+      <div class="brow"><div><div class="brow-label">Hotel Umberto a Mare · Forio</div><a class="brow-link" href="https://www.umbertoamare.it/en/" target="_blank">↗ umbertoamare.it</a></div><span class="badge bp">5783.030.187</span></div>
+      <div class="brow"><div><div class="brow-label">Vueling · Marshal<br>GRX–BCN–NAP & BCN–GRX</div><a class="brow-link" href="https://www.vueling.com/en/manage-your-trip/my-booking" target="_blank">↗ Manage</a></div><div style="text-align:right"><span class="badge bb">NNLINN</span><br><span class="badge bb" style="margin-top:3px;display:inline-block">SJCB4Z</span></div></div>
+      <div class="brow"><div><div class="brow-label">easyJet · Marshal · NAP–BCN</div><a class="brow-link" href="https://www.easyjet.com/en/secure/MyEasyJet.mvc/ViewBooking?bookingReference=KCCXCKQ" target="_blank">↗ Manage</a></div><span class="badge ba">KCCXCKQ</span></div>
+      <div class="brow"><div><div class="brow-label">Lufthansa · Heidi<br>YUL–MUC–NAP & return</div><a class="brow-link" href="https://www.lufthansa.com/gb/en/my-bookings" target="_blank">↗ Manage</a></div><span class="badge bg">7OTLBS</span></div>
+      <div class="brow"><div><div class="brow-label">West Coast srl · Boat tour · 28 Jun</div><a class="brow-link" href="https://www.westcoastischia.it/en/" target="_blank">↗ westcoastischia.it</a></div><span class="badge bt">#340669093</span></div>
+      <div class="brow"><div><div class="brow-label">Ristorante Saturnino · 30 Jun 19:30</div><a class="brow-link" href="https://www.ristorantesaturnino.it/en/" target="_blank">↗ ristorantesaturnino.it</a></div><span class="badge bok">Confirmed</span></div>
+    </div>
+  </div>
+
+  <div class="scard">
+    <div class="scard-head"><div class="scard-title">Still to Book</div></div>
+    <div class="scard-body">
+      <div class="todo-item" onclick="toggleTodo(this)"><div class="tbox"></div><div>Naples hotel · 25–27 June (both)</div></div>
+      <div class="todo-item" onclick="toggleTodo(this)"><div class="tbox"></div><div>Ferry Naples → Forio, 27 June</div></div>
+      <div class="todo-item" onclick="toggleTodo(this)"><div class="tbox"></div><div>Dinner · 27 June (arrive Ischia)</div></div>
+      <div class="todo-item" onclick="toggleTodo(this)"><div class="tbox"></div><div>Dinner · 28 June (after boat tour)</div></div>
+      <div class="todo-item" onclick="toggleTodo(this)"><div class="tbox"></div><div>Dinner · 29 June</div></div>
+      <div class="todo-item" onclick="toggleTodo(this)"><div class="tbox"></div><div>Dinners · 1, 2, 3 July</div></div>
+      <div class="todo-item" onclick="toggleTodo(this)"><div class="tbox"></div><div>Ferry Forio → Naples, 4 July</div></div>
+      <div class="todo-item" onclick="toggleTodo(this)"><div class="tbox"></div><div>Naples hotel · 4–5 July (both)</div></div>
+      <div class="todo-item" onclick="toggleTodo(this)"><div class="tbox done"></div><div class="done-text">Hotel Umberto a Mare · 7 nights</div></div>
+      <div class="todo-item" onclick="toggleTodo(this)"><div class="tbox done"></div><div class="done-text">Boat tour · West Coast srl, 28 Jun</div></div>
+      <div class="todo-item" onclick="toggleTodo(this)"><div class="tbox done"></div><div class="done-text">Ristorante Saturnino · 30 Jun 19:30</div></div>
+      <div class="todo-item" onclick="toggleTodo(this)"><div class="tbox done"></div><div class="done-text">All flights booked</div></div>
+    </div>
+  </div>
+
+  <div class="scard">
+    <div class="scard-head"><div class="scard-title">Sunset & Dinner Guide</div></div>
+    <div class="scard-body">
+      <div class="sun-head"><span>Date</span><span>Sunset</span><span>Book for</span></div>
+      <div class="srow"><span class="srow-d">25 Jun · Naples</span><span class="srow-s">20:29</span><span class="srow-t">19:45</span></div>
+      <div class="srow"><span class="srow-d">26 Jun · Naples</span><span class="srow-s">20:29</span><span class="srow-t">19:45</span></div>
+      <div class="srow"><span class="srow-d">27 Jun · Ischia</span><span class="srow-s">20:30</span><span class="srow-t">19:45</span></div>
+      <div class="srow"><span class="srow-d">28 Jun · Ischia</span><span class="srow-s">20:31</span><span class="srow-t">19:45</span></div>
+      <div class="srow"><span class="srow-d">29 Jun · Ischia</span><span class="srow-s">20:31</span><span class="srow-t">19:45</span></div>
+      <div class="srow ok"><span class="srow-d">30 Jun · Saturnino ✓</span><span class="srow-s">20:32</span><span class="srow-t">19:30 ✓</span></div>
+      <div class="srow"><span class="srow-d">1 Jul · Ischia</span><span class="srow-s">20:39</span><span class="srow-t">19:55</span></div>
+      <div class="srow"><span class="srow-d">2 Jul · Ischia</span><span class="srow-s">20:39</span><span class="srow-t">19:55</span></div>
+      <div class="srow"><span class="srow-d">3 Jul · Ischia</span><span class="srow-s">20:39</span><span class="srow-t">19:55</span></div>
+      <div class="srow"><span class="srow-d">4 Jul · Naples</span><span class="srow-s">20:38</span><span class="srow-t">19:55</span></div>
+      <div class="srow"><span class="srow-d">5 Jul · Naples</span><span class="srow-s">20:38</span><span class="srow-t">19:55</span></div>
+      <p class="sun-note">Forio faces west — Soccorso church terrace is 5 min from hotel. In Naples: Posillipo & Lungomare face the Gulf of Naples.</p>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- RESOURCES -->
+<div id="resources" class="page">
+<div class="resources-grid">
+  <div class="scard" style="grid-column:1/-1;padding:20px 24px 16px;"><p class="section-title" style="margin-bottom:0;">Places, bookings & useful links</p></div>
+
+  <div class="res-card"><div class="res-card-head"><div class="res-cat">Hotel · Ischia</div><div class="res-name">Hotel Umberto a Mare</div></div>
+  <div class="res-card-body"><div class="rs rs-ok">✓ Booked — Conf. 5783.030.187</div>
+  <div class="dr"><span class="dk2">Address</span><span>Via Soccorso 2, Forio d'Ischia</span></div>
+  <div class="dr"><span class="dk2">Dates</span><span>27 Jun – 4 Jul · 7 nights</span></div>
+  <div class="dr"><span class="dk2">Room</span><span>Superior Double Sea View · Non-smoking</span></div>
+  <div class="dr"><span class="dk2">Check-in</span><span>13:00–17:00 · PIN 3312</span></div>
+  <div class="dr"><span class="dk2">Meals</span><span>Breakfast included · served on sea terrace</span></div>
+  <div class="dr"><span class="dk2">On-site</span><span class="mstar">★ Michelin restaurant Umberto a Mare (Nov 2025)</span></div>
+  <div class="res-links">
+    <a href="https://www.umbertoamare.it/en/" target="_blank" class="res-link">↗ Official website</a>
+    <a href="https://www.umbertoamare.it/en/hotel-booking/" target="_blank" class="res-link">↗ Booking page</a>
+    <a href="tel:+39081997171" class="res-link dk">📞 +39 081 997171</a>
+    <a href="https://maps.google.com/?q=Hotel+Umberto+a+Mare+Forio+Ischia" target="_blank" class="res-link">↗ Google Maps</a>
+  </div></div></div>
+
+  <div class="res-card"><div class="res-card-head"><div class="res-cat">Restaurant · Forio, Ischia</div><div class="res-name">Ristorante Saturnino</div></div>
+  <div class="res-card-body"><div class="rs rs-ok">✓ Confirmed · 30 Jun 19:30 · 2 persons</div>
+  <div class="dr"><span class="dk2">Address</span><span>Via Soprascaro 17, Porto di Forio</span></div>
+  <div class="dr"><span class="dk2">Phone</span><span>+39 081 998296</span></div>
+  <div class="dr"><span class="dk2">Note</span><span>15-min grace period. Fish-forward menu, 220+ wines, harbour views.</span></div>
+  <div class="dr"><span class="dk2">History</span><span>Founded 1946 by American Philip Dakin who fell for the island</span></div>
+  <div class="dr"><span class="dk2">Guide</span><span class="mstar">★ Michelin Guide listed</span></div>
+  <div class="res-links">
+    <a href="https://www.ristorantesaturnino.it/en/" target="_blank" class="res-link">↗ Official website</a>
+    <a href="https://www.ristorantesaturnino.it/en/make-reservation/" target="_blank" class="res-link">↗ Reserve a table</a>
+    <a href="https://menu.ristorantesaturnino.it/" target="_blank" class="res-link">↗ View menu</a>
+    <a href="https://guide.michelin.com/us/en/campania/forio/restaurant/il-saturnino" target="_blank" class="res-link dk">↗ Michelin Guide</a>
+    <a href="tel:+390819982896" class="res-link dk">📞 +39 081 998296</a>
+  </div></div></div>
+
+  <div class="res-card"><div class="res-card-head"><div class="res-cat">Boat Tour · Forio, Ischia</div><div class="res-name">West Coast srl</div></div>
+  <div class="res-card-body"><div class="rs rs-ok">✓ Booked · #340669093 · Sun 28 Jun</div>
+  <div class="dr"><span class="dk2">Boat</span><span>Gozzo Fratelli Aprea 750 Open · 7.5m</span></div>
+  <div class="dr"><span class="dk2">Time</span><span>10:00–17:30 (start 10–11 flexible)</span></div>
+  <div class="dr"><span class="dk2">Route</span><span>Private tour of Ischia & Procida</span></div>
+  <div class="dr"><span class="dk2">Balance</span><span>€580 due on day (€133.44 paid of €713.44)</span></div>
+  <div class="dr"><span class="dk2">Cancel</span><span>Full refund 24h+ notice · weather cancellation = full refund</span></div>
+  <div class="res-links">
+    <a href="https://www.westcoastischia.it/en/" target="_blank" class="res-link">↗ westcoastischia.it</a>
+    <a href="https://www.westcoastischia.it/en/boat-tour-with-skipper/" target="_blank" class="res-link">↗ Tour info</a>
+    <a href="tel:+393385099868" class="res-link dk">📞 +39 338 509 9868</a>
+    <a href="mailto:westcoastischia@libero.it" class="res-link dk">✉ westcoastischia@libero.it</a>
+  </div></div></div>
+
+  <div class="res-card"><div class="res-card-head"><div class="res-cat">Restaurant · Forio, Ischia</div><div class="res-name">Ristorante Umberto a Mare</div></div>
+  <div class="res-card-body"><div class="rs rs-tbd">To book — any evening on Ischia</div>
+  <div class="dr"><span class="dk2">Location</span><span>Adjacent to the hotel · directly on the sea</span></div>
+  <div class="dr"><span class="dk2">Guide</span><span class="mstar">★ Michelin Star (awarded Nov 2025)</span></div>
+  <div class="dr"><span class="dk2">Wine</span><span>1,000+ label cellar · Ischian specialties</span></div>
+  <div class="dr"><span class="dk2">Book for</span><span>19:45 for sunset views from the terrace</span></div>
+  <div class="res-links">
+    <a href="https://www.umbertoamare.it/en/" target="_blank" class="res-link">↗ umbertoamare.it</a>
+    <a href="tel:+39081997171" class="res-link dk">📞 +39 081 997171</a>
+  </div></div></div>
+
+  <div class="res-card"><div class="res-card-head"><div class="res-cat">Hotel · Naples (3 nights)</div><div class="res-name">Naples accommodation</div></div>
+  <div class="res-card-body"><div class="rs rs-tbd">To book — 25–27 Jun & 4–5 Jul</div>
+  <div class="dr"><span class="dk2">25–27 Jun</span><span>2 nights · both · Heidi lands 16:45, Marshal 19:30</span></div>
+  <div class="dr"><span class="dk2">4–5 Jul</span><span>1 night · both · last night together</span></div>
+  <div class="dr"><span class="dk2">Best areas</span><span>Chiaia, Posillipo, Lungomare · west-facing for sunset</span></div>
+  <div class="dr"><span class="dk2">Tip</span><span>Near Molo Beverello port for easy ferry to Ischia on 27 Jun</span></div>
+  <div class="res-links">
+    <a href="https://www.booking.com/searchresults.html?city=-122994&checkin=2026-06-25&checkout=2026-06-27" target="_blank" class="res-link">↗ Booking.com</a>
+    <a href="https://www.airbnb.com/s/Naples--Italy/homes?checkin=2026-06-25&checkout=2026-06-27" target="_blank" class="res-link">↗ Airbnb</a>
+  </div></div></div>
+
+  <div class="res-card"><div class="res-card-head"><div class="res-cat">Ferry · Naples ↔ Ischia/Forio</div><div class="res-name">Naples–Forio Ferry</div></div>
+  <div class="res-card-body"><div class="rs rs-tbd">To book · 27 Jun & 4 Jul</div>
+  <div class="dr"><span class="dk2">Outbound</span><span>Naples → Forio · Sat 27 Jun · aim before 13:00</span></div>
+  <div class="dr"><span class="dk2">Return</span><span>Forio → Naples · Sat 4 Jul · morning</span></div>
+  <div class="dr"><span class="dk2">Best option</span><span>Alilauro hydrofoil direct NAP–Forio · ~50min · from ~€23pp</span></div>
+  <div class="dr"><span class="dk2">From Naples</span><span>Molo Beverello (hydrofoils)</span></div>
+  <div class="dr"><span class="dk2">Tip</span><span>Book in advance — summer Saturdays fill up quickly</span></div>
+  <div class="res-links">
+    <a href="https://www.ferryhopper.com/en/ferry-routes/direct/ferry-naples-ischia-traghetti" target="_blank" class="res-link">↗ Ferryhopper (compare & book)</a>
+    <a href="https://www.naplesbayferry.com/en/t/napoli/ischia" target="_blank" class="res-link">↗ NaplesBayFerry schedules</a>
+    <a href="https://www.alilauro.it" target="_blank" class="res-link">↗ Alilauro (direct to Forio)</a>
+    <a href="https://www.ischiainsider.com/en/ferry-schedule" target="_blank" class="res-link">↗ Ischia Insider ferry guide</a>
+  </div></div></div>
+
+  <div class="res-card"><div class="res-card-head"><div class="res-cat">Landmark · Forio, Ischia</div><div class="res-name">Chiesa del Soccorso</div></div>
+  <div class="res-card-body">
+  <div class="dr"><span class="dk2">What</span><span>Iconic white church on sea promontory · 5 min walk from hotel</span></div>
+  <div class="dr"><span class="dk2">Why</span><span>One of the finest sunset viewpoints in southern Italy · faces due west</span></div>
+  <div class="dr"><span class="dk2">Tip</span><span>Arrive ~20:00 for aperitivo then dinner at 19:45 nearby</span></div>
+  <div class="res-links">
+    <a href="https://maps.google.com/?q=Chiesa+del+Soccorso+Forio+Ischia" target="_blank" class="res-link">↗ Google Maps</a>
+    <a href="https://www.ischiainsider.com" target="_blank" class="res-link">↗ Ischia Insider</a>
+  </div></div></div>
+
+  <div class="res-card"><div class="res-card-head"><div class="res-cat">Flights · Marshal</div><div class="res-name">Vueling · easyJet</div></div>
+  <div class="res-card-body"><div class="rs rs-ok">✓ All Marshal flights booked</div>
+  <div class="dr"><span class="dk2">25 Jun</span><span>VY2013 GRX→BCN 14:35 + VY6504 BCN→NAP 17:30 · NNLINN</span></div>
+  <div class="dr"><span class="dk2">5 Jul</span><span>EJU7158 NAP→BCN 15:45 · KCCXCKQ · Seat 3A</span></div>
+  <div class="dr"><span class="dk2">5 Jul</span><span>VY2016 BCN→GRX 20:30 · SJCB4Z · Seat 7F</span></div>
+  <div class="res-links">
+    <a href="https://www.vueling.com/en/manage-your-trip/my-booking" target="_blank" class="res-link">↗ Manage Vueling</a>
+    <a href="https://www.easyjet.com/en/secure/MyEasyJet.mvc/ViewBooking?bookingReference=KCCXCKQ" target="_blank" class="res-link">↗ Manage easyJet</a>
+  </div></div></div>
+
+  <div class="res-card"><div class="res-card-head"><div class="res-cat">Flights · Heidi</div><div class="res-name">Lufthansa · 7OTLBS</div></div>
+  <div class="res-card-body"><div class="rs rs-ok">✓ All Heidi flights booked</div>
+  <div class="dr"><span class="dk2">24–25 Jun</span><span>LH473 YUL→MUC 22:50 + LH4146 MUC→NAP 15:00</span></div>
+  <div class="dr"><span class="dk2">5 Jul</span><span>LH1877 NAP→MUC 13:05 + LH474 MUC→YUL 16:45</span></div>
+  <div class="dr"><span class="dk2">Heidi NAP</span><span>Arrives 25 Jun 16:45 · Departs 5 Jul 13:05</span></div>
+  <div class="res-links">
+    <a href="https://www.lufthansa.com/gb/en/my-bookings" target="_blank" class="res-link">↗ Manage booking (7OTLBS)</a>
+  </div></div></div>
+
+</div>
+</div>
+
+<!-- BUDGET -->
+<div id="budget" class="page">
+<div class="budget-wrap">
+  <div class="scard" style="grid-column:1/-1;padding:20px 24px 16px;"><p class="section-title" style="margin-bottom:0;">Trip costs overview</p></div>
+
+  <div class="budget-card">
+    <div class="budget-head">Flights — Marshal</div>
+    <div class="budget-row"><span class="budget-label">Vueling GRX–BCN–NAP (NNLINN)</span><span class="budget-amount pd">€251.60</span></div>
+    <div class="budget-row"><span class="budget-label">Vueling BCN–GRX (SJCB4Z)</span><span class="budget-amount pd">€85.09</span></div>
+    <div class="budget-row"><span class="budget-label">easyJet NAP–BCN (KCCXCKQ)</span><span class="budget-amount pd">€166.97</span></div>
+    <div class="budget-total"><span>Marshal flights total</span><span>€503.66</span></div>
+  </div>
+
+  <div class="budget-card">
+    <div class="budget-head">Hotel Umberto a Mare</div>
+    <div class="budget-row"><span class="budget-label">Room · 7 nights incl. breakfast</span><span class="budget-amount">€1,590.91</span></div>
+    <div class="budget-row"><span class="budget-label">10% VAT</span><span class="budget-amount">€159.09</span></div>
+    <div class="budget-row"><span class="budget-label">Booking.com discount</span><span class="budget-amount" style="color:var(--green-ok);">−€127.27</span></div>
+    <div class="budget-total"><span>Hotel total</span><span>€1,750.00</span></div>
+  </div>
+
+  <div class="budget-card">
+    <div class="budget-head">Boat Tour — West Coast srl</div>
+    <div class="budget-row"><span class="budget-label">Deposit paid (28 Mar 2026)</span><span class="budget-amount pd">€133.44</span></div>
+    <div class="budget-row"><span class="budget-label">Balance due on 28 June</span><span class="budget-amount tb">€580.00</span></div>
+    <div class="budget-total"><span>Boat tour total</span><span>€713.44</span></div>
+  </div>
+
+  <div class="budget-card">
+    <div class="budget-head">Still to Book</div>
+    <div class="budget-row"><span class="budget-label">Naples hotels · 3 nights (est.)</span><span class="budget-amount tb">TBD</span></div>
+    <div class="budget-row"><span class="budget-label">Ferries Naples↔Forio ×2 (est.)</span><span class="budget-amount tb">~€46</span></div>
+    <div class="budget-row"><span class="budget-label">Ristorante Saturnino · 30 Jun</span><span class="budget-amount tb">TBD</span></div>
+    <div class="budget-row"><span class="budget-label">Remaining dinners · est. 8 × ~€120</span><span class="budget-amount tb">~€960</span></div>
+    <div class="budget-total"><span>Estimated remaining</span><span>~€1,006+</span></div>
+  </div>
+
+  <div class="budget-note">
+    <strong>Paid so far (Marshal):</strong> €503.66 flights + €1,750 hotel + €133.44 boat deposit = <strong style="color:var(--sea);">€2,387.10</strong><br>
+    <strong>Still due:</strong> €580 boat balance on 28 Jun + Naples hotels + remaining dinners + ferries<br>
+    <strong>Hotel note:</strong> Invoice from property will show €1,750 total (Booking.com pays their €127.27 share separately).<br>
+    <strong>Heidi's flights</strong> (Lufthansa 7OTLBS) are her own cost and not included above.
+  </div>
+</div>
+</div>
+
+<!-- GETTING AROUND PAGE -->
+<div id="transport" class="page">
+<div class="resources-grid">
+  <div class="scard" style="grid-column:1/-1;padding:20px 24px 16px;"><p class="section-title" style="margin-bottom:0;">Getting around Ischia — buses, taxis & the Epomeo hike</p></div>
+
+  <!-- BUS OVERVIEW -->
+  <div class="res-card" style="grid-column:1/-1;">
+    <div class="res-card-head"><div class="res-cat">Public Bus · EAV (Ente Autonomo Volturno)</div><div class="res-name">Island Bus Network</div></div>
+    <div class="res-card-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:12px;">
+        <div style="background:#f5efe6;border-radius:8px;padding:12px;">
+          <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">CS — Circolare Sinistra</div>
+          <div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:4px;">Anti-clockwise route</div>
+          <div style="font-size:11px;color:var(--muted);">Ischia Porto → Casamicciola → Lacco Ameno → <strong>Forio</strong> → Cava Grado → Serrara → <strong>Fontana</strong> → Barano → Ischia Porto</div>
+          <div style="font-size:11px;color:var(--sea);margin-top:6px;">✓ Takes CS from Forio to Fontana for Epomeo</div>
+        </div>
+        <div style="background:#f5efe6;border-radius:8px;padding:12px;">
+          <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">CD — Circolare Destra</div>
+          <div style="font-size:12px;font-weight:500;color:var(--text);margin-bottom:4px;">Clockwise route</div>
+          <div style="font-size:11px;color:var(--muted);">Ischia Porto → Barano → <strong>Fontana</strong> → Serrara → Cava Grado → <strong>Forio</strong> → Lacco Ameno → Casamicciola → Ischia Porto</div>
+          <div style="font-size:11px;color:var(--sea);margin-top:6px;">✓ Also reaches Fontana (longer route from Forio via Ischia Porto)</div>
+        </div>
+      </div>
+      <div class="dr"><span class="dk2">Ticket price</span><span>€1.50 single (on bus: €2.00) · Day pass €4.50 · Weekly pass ~€15.50</span></div>
+      <div class="dr"><span class="dk2">Buy tickets</span><span>Tabaccheria (tobacconist) · bars · newspaper stands · hotel · at the bus terminal at Ischia Porto. <strong>Buy in advance</strong> — not always available on board.</span></div>
+      <div class="dr"><span class="dk2">Validate</span><span>Always stamp your ticket in the machine on the bus — fine if you don't</span></div>
+      <div class="dr"><span class="dk2">Hours</span><span>04:20–01:50 (summer) — very frequent during the day</span></div>
+      <div class="dr"><span class="dk2">From Forio</span><span>Bus stop near the port / Piazza Municipio area. Ask at hotel for exact stop.</span></div>
+      <div class="dr"><span class="dk2">To Fontana</span><span>Take CS from Forio towards Fontana — ~30min · €1.50pp. Alight at Fontana church (large white statue of Jesus)</span></div>
+      <div class="dr"><span class="dk2">Other lines</span><span>Line 1 (Ischia Porto–Forio–Sant'Angelo) · Line 2 (Ischia Porto–Forio–Citara/Poseidon) · Line 21/22/23/24 (Forio local routes)</span></div>
+      <div class="res-links" style="margin-top:10px;">
+        <a href="https://www.ischiainsider.com/en/bus-schedule" target="_blank" class="res-link">↗ Ischia Insider — CS & CD schedules</a>
+        <a href="https://www.ischiainsider.com/en/bus-schedule?route=cd" target="_blank" class="res-link">↗ CD timetable</a>
+        <a href="https://www.ischiareview.com/buses-in-ischia.html" target="_blank" class="res-link">↗ All bus lines (Ischia Review)</a>
+        <a href="https://www.tourismischia.it/en/ischia-buses-timetables/" target="_blank" class="res-link">↗ Official EAV timetables download</a>
+        <a href="https://moovitapp.com/index/en/public_transit-line-cs-Napoli_e_Campania-882-883261-501669-0" target="_blank" class="res-link">↗ CS live tracker (Moovit)</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAXI PRICES -->
+  <div class="res-card">
+    <div class="res-card-head"><div class="res-cat">Land Taxi · from Forio</div><div class="res-name">Taxi fares from Forio</div></div>
+    <div class="res-card-body">
+      <div style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;">Approximate guide prices (2025–26)</div>
+      <div class="dr" style="border-bottom:0.5px solid var(--border);padding:5px 0;"><span style="font-weight:500;min-width:160px;">Forio → Fontana</span><span style="color:var(--sea);font-weight:500;">~€25–28</span></div>
+      <div class="dr" style="border-bottom:0.5px solid var(--border);padding:5px 0;"><span style="font-weight:500;min-width:160px;">Forio → Ischia Porto</span><span style="color:var(--sea);font-weight:500;">~€30–37</span></div>
+      <div class="dr" style="border-bottom:0.5px solid var(--border);padding:5px 0;"><span style="font-weight:500;min-width:160px;">Forio → Ischia Ponte</span><span style="color:var(--sea);font-weight:500;">~€30–37</span></div>
+      <div class="dr" style="border-bottom:0.5px solid var(--border);padding:5px 0;"><span style="font-weight:500;min-width:160px;">Forio → Lacco Ameno</span><span style="color:var(--sea);font-weight:500;">~€15–20</span></div>
+      <div class="dr" style="border-bottom:0.5px solid var(--border);padding:5px 0;"><span style="font-weight:500;min-width:160px;">Forio → Casamicciola</span><span style="color:var(--sea);font-weight:500;">~€18–25</span></div>
+      <div class="dr" style="border-bottom:0.5px solid var(--border);padding:5px 0;"><span style="font-weight:500;min-width:160px;">Forio → Sant'Angelo</span><span style="color:var(--sea);font-weight:500;">~€20–25</span></div>
+      <div class="dr" style="border-bottom:0.5px solid var(--border);padding:5px 0;"><span style="font-weight:500;min-width:160px;">Forio → Serrara Fontana</span><span style="color:var(--sea);font-weight:500;">~€25–28</span></div>
+      <div class="dr" style="border-bottom:0.5px solid var(--border);padding:5px 0;"><span style="font-weight:500;min-width:160px;">Forio → Poseidon/Citara</span><span style="color:var(--sea);font-weight:500;">~€12–15</span></div>
+      <div class="dr" style="padding:5px 0;"><span style="font-weight:500;min-width:160px;">Island tour (3 hrs)</span><span style="color:var(--sea);font-weight:500;">~€80–100</span></div>
+      <div style="margin-top:10px;font-size:11px;color:var(--muted);line-height:1.6;">
+        Minimum fare: ~€15 · Night surcharge (22:00–07:00): +€3 · Prices are fixed routes, not metered.<br>Taxi stands in Forio near the port. Also available at Ischia Porto (Piazza degli Eroi & Piazzetta San Girolamo).
+      </div>
+      <div class="res-links" style="margin-top:10px;">
+        <a href="https://www.ischiareview.com/taxis-in-ischia.html" target="_blank" class="res-link">↗ Full taxi price list (Ischia Review)</a>
+        <a href="https://www.ischiareview.com/book-a-taxi-in-ischia.html" target="_blank" class="res-link">↗ Book a taxi</a>
+        <a href="https://www.taxi-ischia.it/tariffe-taxi-ischia/" target="_blank" class="res-link">↗ Official fare table (taxi-ischia.it)</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- EPOMEO HIKE GUIDE -->
+  <div class="res-card">
+    <div class="res-card-head"><div class="res-cat">Hike · Monday 29 June</div><div class="res-name">Monte Epomeo (789m)</div></div>
+    <div class="res-card-body">
+      <div class="rs rs-tbd" style="background:rgba(26,77,110,.1);color:var(--marshal);">🥾 Planned — Monday 29 June</div>
+
+      <div style="font-size:11px;font-weight:500;color:var(--text);margin:10px 0 4px;">Option A — Bus to Fontana (recommended)</div>
+      <div class="dr"><span class="dk2">Step 1</span><span>Walk to Forio bus stop · take CS bus towards Fontana (~30min · €1.50pp)</span></div>
+      <div class="dr"><span class="dk2">Step 2</span><span>Get off at Fontana — look for the church with the large white statue of Jesus</span></div>
+      <div class="dr"><span class="dk2">Step 3</span><span>Cross the road, turn left, follow signs to Monte Epomeo (3km · ~1hr uphill)</span></div>
+      <div class="dr"><span class="dk2">Step 4</span><span>Summit! Visit San Nicola church, carved into tuff rock (1459) · small museum</span></div>
+      <div class="dr"><span class="dk2">Lunch</span><span>★ La Grotta da Fiore — cave restaurant at summit. Rabbit Ischian style · bruschetta · local wine. Open daily for lunch. No reservation needed (but call ahead for July).</span></div>
+      <div class="dr"><span class="dk2">Return</span><span>Same path back to Fontana (~50min) · CS/CD bus back to Forio · or taxi from Fontana (~€25–28)</span></div>
+
+      <div style="font-size:11px;font-weight:500;color:var(--text);margin:12px 0 4px;">Option B — Walk from hotel (more challenging)</div>
+      <div class="dr"><span class="dk2">Route</span><span>From hotel, walk uphill through Forio to Santa Maria al Monte (~45min) · then summit trail (~50min)</span></div>
+      <div class="dr"><span class="dk2">AllTrails</span><span>Santa Maria al Monte → Epomeo · 3.1mi out-and-back · Hard · 1,374ft gain · 2.5–3hr</span></div>
+      <div class="dr"><span class="dk2">Note</span><span>The AllTrails page notes this as the highest elevation gain trail on the island — stunning but tough</span></div>
+
+      <div style="font-size:11px;font-weight:500;color:var(--text);margin:12px 0 4px;">Logistics &amp; tips</div>
+      <div class="dr"><span class="dk2">Start early</span><span>Leave hotel by 08:00–08:30 · cooler, less crowded, haze clears for views</span></div>
+      <div class="dr"><span class="dk2">Kit</span><span>Hiking shoes (mandatory) · 2L water each · sunscreen · light jacket · snacks</span></div>
+      <div class="dr"><span class="dk2">Views</span><span>On a clear day: Capri · Vesuvius · Procida · Ponza · Sorrento peninsula · Naples · Forio below</span></div>
+      <div class="dr"><span class="dk2">Summit food</span><span>La Grotta da Fiore: also serves freshly squeezed lemonade and espresso — famous for the rabbit in tuff cave setting</span></div>
+      <div class="dr"><span class="dk2">Back by</span><span>Aim to be back in Forio by 15:30–16:00 · recover · sunset aperitivo · dinner 19:45</span></div>
+
+      <div class="res-links" style="margin-top:10px;">
+        <a href="https://www.alltrails.com/trail/italy/campania/fontana-monte-epomeo" target="_blank" class="res-link">↗ AllTrails: Fontana–Epomeo trail</a>
+        <a href="https://www.alltrails.com/trail/italy/campania/santa-maria-al-monte-monte-epomeo" target="_blank" class="res-link">↗ AllTrails: Santa Maria–Epomeo trail</a>
+        <a href="https://www.epomeolagrotta.com/" target="_blank" class="res-link">↗ La Grotta da Fiore website</a>
+        <a href="https://www.tripadvisor.com/Restaurant_Review-g580215-d1813570-Reviews-La_Grotta_da_Fiore-Serrara_Fontana_Isola_d_Ischia_Province_of_Naples_Campania.html" target="_blank" class="res-link">↗ La Grotta on TripAdvisor</a>
+        <a href="tel:+393685599916" class="res-link dk">📞 La Grotta da Fiore: +39 368 559 916</a>
+        <a href="https://flipflopsincluded.com/mount-epomeo-hike-ischia/" target="_blank" class="res-link">↗ Detailed hike guide (photos)</a>
+        <a href="https://maps.google.com/?q=Monte+Epomeo+Ischia" target="_blank" class="res-link">↗ Google Maps</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- WATER TAXIS -->
+  <div class="res-card">
+    <div class="res-card-head"><div class="res-cat">Water Taxi · boat transfers</div><div class="res-name">Water taxis between beaches</div></div>
+    <div class="res-card-body">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:10px;">Great for accessing beaches only reachable by sea, or quick island-hopping.</div>
+      <div style="font-size:11px;font-weight:500;color:var(--text);margin-bottom:6px;">From Sant'Angelo (approx. fares)</div>
+      <div class="dr" style="border-bottom:0.5px solid var(--border);padding:4px 0;"><span style="min-width:160px;">→ Le Fumarole / Cavascura</span><span style="color:var(--sea);font-weight:500;">€3 pp each way</span></div>
+      <div class="dr" style="border-bottom:0.5px solid var(--border);padding:4px 0;"><span style="min-width:160px;">→ Sorgeto hot springs</span><span style="color:var(--sea);font-weight:500;">€5 pp each way</span></div>
+      <div class="dr" style="border-bottom:0.5px solid var(--border);padding:4px 0;"><span style="min-width:160px;">→ Citara Beach</span><span style="color:var(--sea);font-weight:500;">€100 for up to 6</span></div>
+      <div class="dr" style="padding:4px 0;"><span style="min-width:160px;">→ Forio / Ischia Porto</span><span style="color:var(--sea);font-weight:500;">€120 for up to 6</span></div>
+      <div style="margin-top:10px;font-size:11px;color:var(--muted);line-height:1.6;">
+        Water taxis depart from Ischia Ponte, Sant'Angelo, and Maronti. They serve beaches inaccessible by road. Much cheaper than land taxi for coastal journeys.
+      </div>
+      <div class="res-links" style="margin-top:10px;">
+        <a href="https://www.ischiareview.com/ischia-water-taxis.html" target="_blank" class="res-link">↗ Full water taxi prices (Ischia Review)</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCOOTER RENTAL -->
+  <div class="res-card">
+    <div class="res-card-head"><div class="res-cat">Scooter / e-bike rental · Forio</div><div class="res-name">Get around independently</div></div>
+    <div class="res-card-body">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:10px;">The most popular and flexible way to explore Ischia — especially for reaching beaches and viewpoints on your own schedule.</div>
+      <div class="dr"><span class="dk2">Cost</span><span>Scooter rental ~€25–40/day · e-bike ~€20–30/day</span></div>
+      <div class="dr"><span class="dk2">Licence</span><span>Standard driving licence usually sufficient for 50cc scooters. Ask at rental.</span></div>
+      <div class="dr"><span class="dk2">Parking</span><span>Easy to find · pay lots in town centres ~€2/hr · free in quieter areas</span></div>
+      <div class="dr"><span class="dk2">Note</span><span>No driving licence needed for e-bikes. Heavy summer traffic — allow extra time. Roads can be steep and narrow.</span></div>
+      <div class="dr"><span class="dk2">In Forio</span><span>Several rental shops near the port — no need to reserve in advance.</span></div>
+      <div class="res-links" style="margin-top:10px;">
+        <a href="https://www.ischiainsider.com/en/scooter-rental" target="_blank" class="res-link">↗ Scooter rental guide</a>
+        <a href="https://maps.google.com/?q=scooter+rental+Forio+Ischia" target="_blank" class="res-link">↗ Find rental shops near Forio</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- KEY DESTINATIONS FROM FORIO -->
+  <div class="res-card" style="grid-column:1/-1;">
+    <div class="res-card-head"><div class="res-cat">Distances & journey times · from Forio</div><div class="res-name">Getting to key places on the island</div></div>
+    <div class="res-card-body">
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:4px;">
+        <div style="background:#f5efe6;border-radius:8px;padding:10px;">
+          <div style="font-size:12px;font-weight:500;color:var(--text);">Fontana (Epomeo base)</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px;">Bus CS: ~30min · €1.50<br>Taxi: ~€25–28<br>Scooter: ~20min</div>
+        </div>
+        <div style="background:#f5efe6;border-radius:8px;padding:10px;">
+          <div style="font-size:12px;font-weight:500;color:var(--text);">Ischia Porto / Ponte</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px;">Bus CS/CD: ~35–40min · €1.50<br>Taxi: ~€30–37<br>Scooter: ~25min</div>
+        </div>
+        <div style="background:#f5efe6;border-radius:8px;padding:10px;">
+          <div style="font-size:12px;font-weight:500;color:var(--text);">Sant'Angelo</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px;">Bus Line 1: ~25min · €1.50<br>Taxi: ~€20–25<br>Scooter: ~15min</div>
+        </div>
+        <div style="background:#f5efe6;border-radius:8px;padding:10px;">
+          <div style="font-size:12px;font-weight:500;color:var(--text);">Lacco Ameno</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px;">Bus CS: ~20min · €1.50<br>Taxi: ~€15–20<br>Scooter: ~15min</div>
+        </div>
+        <div style="background:#f5efe6;border-radius:8px;padding:10px;">
+          <div style="font-size:12px;font-weight:500;color:var(--text);">Casamicciola</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px;">Bus CS: ~25min · €1.50<br>Taxi: ~€18–25<br>Scooter: ~20min</div>
+        </div>
+        <div style="background:#f5efe6;border-radius:8px;padding:10px;">
+          <div style="font-size:12px;font-weight:500;color:var(--text);">Poseidon / Citara Beach</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px;">Bus Line 2: ~10min · €1.50<br>Taxi: ~€12–15<br>Walking: ~20–25min</div>
+        </div>
+        <div style="background:#f5efe6;border-radius:8px;padding:10px;">
+          <div style="font-size:12px;font-weight:500;color:var(--text);">Maronti Beach</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px;">Bus via Barano: ~45min · €1.50<br>Taxi: ~€40–45<br>Water taxi from Sant'Angelo: €3pp</div>
+        </div>
+        <div style="background:#f5efe6;border-radius:8px;padding:10px;">
+          <div style="font-size:12px;font-weight:500;color:var(--text);">Sorgeto Hot Springs</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px;">Bus + walk: ~20min<br>Taxi: ~€15–20<br>Water taxi from Sant'Angelo: €5pp</div>
+        </div>
+      </div>
+      <div style="margin-top:12px;font-size:11px;color:var(--muted);line-height:1.6;">
+        <strong>Pro tip:</strong> Buy a day pass (€4.50pp) if you plan to take 3+ bus trips. Bus passes are also valid on the ferry between Ischia Porto and Casamicciola. In July, buses can be busy — allow extra time and consider the scooter for flexibility.
+      </div>
+    </div>
+  </div>
+
+</div>
+</div><!-- /transport page -->
+
+<footer><p>Ischia 2026 &nbsp;·&nbsp; <span>Marshal & Heidi</span> &nbsp;·&nbsp; Built with Claude · Ready for Cloudflare Pages</p></footer>
+
+<script>
+function showPage(id,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+function toggleTodo(el){
+  el.querySelector('.tbox').classList.toggle('done');
+  const t=el.querySelector('div:last-child');
+  t.classList.toggle('done-text');
+}
+
+const days=[
+  {date:'Wed 24 June',name:'Heidi departs Montreal',sunset:null,events:[
+    {cls:'confirmed',icon:'✈',icn:'ih',title:'Montreal → Munich',who:'h',
+     sub:'Lufthansa LH473 · <span class="badge bg">7OTLBS</span>',
+     detail:'Departs YUL 22:50 · Arrives MUC 12:05 <span class="p1">+1 Thu 25 Jun</span>',
+     exp:{info:[['Duration','7h 15min'],['Bags','20kg hold allowance per Lufthansa policy']],
+       links:[['↗ Manage booking','https://www.lufthansa.com/gb/en/my-bookings','']]}}
+  ]},
+  {date:'Thu 25 June',name:'Everyone travels to Naples',sunset:'20:29',events:[
+    {cls:'confirmed',icon:'✈',icn:'ih',title:'Munich → Naples',who:'h',
+     sub:'Lufthansa City LH4146 · <span class="badge bg">7OTLBS</span>',
+     detail:'Departs MUC T2 15:00 · Arrives NAP 16:45',
+     exp:{info:[['Layover','2h 55min at MUC after landing 12:05'],['Terminal','MUC Terminal 2']],
+       links:[['↗ Manage booking','https://www.lufthansa.com/gb/en/my-bookings','']]}},
+    {cls:'confirmed',icon:'✈',icn:'im',title:'Granada → Barcelona',who:'m',
+     sub:'Vueling VY2013 · <span class="badge bb">NNLINN</span>',
+     detail:'Departs GRX 14:35 · Arrives BCN 16:05 · Seat 7F',
+     exp:{info:[['Check-in','Opens 15 days before · closes 40 min pre-dep.'],['Bags','1 underseat + 1 large cabin']],
+       links:[['↗ Manage booking','https://www.vueling.com/en/manage-your-trip/my-booking',''],['↗ vueling.com','https://www.vueling.com','']]}},
+    {cls:'connector',label:'1h 25min connection at BCN'},
+    {cls:'confirmed',icon:'✈',icn:'im',title:'Barcelona → Naples',who:'m',
+     sub:'Vueling VY6504 · <span class="badge bb">NNLINN</span>',
+     detail:'Departs BCN 17:30 · Arrives NAP 19:30 · Seat 2F',
+     exp:{info:[['Seats','7F (BCN leg) · 2F (NAP leg)']],
+       links:[['↗ Manage booking','https://www.vueling.com/en/manage-your-trip/my-booking','']]}},
+    {cls:'tbd',icon:'🏛',icn:'itbd',title:'Hotel in Naples',who:'both',tbd:true,
+     sub:'1 night · Heidi ~16:45, Marshal ~19:30',detail:'Research & book — west-facing for sunset views',
+     exp:{info:[['Nights','25–27 Jun (2 nights total)'],['Area','Chiaia · Posillipo · Lungomare'],['Tip','Near Molo Beverello for easy ferry next day']],
+       links:[['↗ Booking.com','https://www.booking.com/searchresults.html?city=-122994',''],['↗ Airbnb','https://www.airbnb.com/s/Naples--Italy/homes','']]}}
+  ]},
+  {date:'Fri 26 June',name:'Naples day',sunset:'20:29',events:[
+    {cls:'tbd',icon:'🏛',icn:'itbd',title:'Hotel in Naples (2nd night)',who:'both',tbd:true,
+     sub:'Explore Naples together',detail:'',
+     exp:{info:[['Sunset','20:29 — book dinner 19:45 for Posillipo/Lungomare views'],['Port','Molo Beverello: 10 min walk from Chiaia/waterfront hotels']],
+       links:[['↗ Booking.com','https://www.booking.com/searchresults.html?city=-122994',''],['↗ Naples guide','https://www.ischiainsider.com/en/naples','']]}}
+  ]},
+  {date:'Sat 27 June',name:'Ferry to Ischia · check-in',sunset:'20:30',events:[
+    {cls:'tbd',icon:'⛴',icn:'iferry',title:'Ferry · Naples → Forio',who:'both',tbd:true,
+     sub:'Molo Beverello → Forio · aim arrive before 13:00',
+     detail:'~50min (Alilauro hydrofoil) · from ~€23pp',
+     exp:{info:[['Best option','Alilauro direct NAP–Forio (no stop at Ischia Porto)'],['Departs from','Molo Beverello, Naples'],['Book ahead','Recommended — summer Saturdays fill up'],['Luggage','1 bag up to 9kg (Alilauro)']],
+       links:[['↗ Ferryhopper (book)','https://www.ferryhopper.com/en/ferry-routes/direct/ferry-naples-ischia-traghetti',''],['↗ NaplesBayFerry','https://www.naplesbayferry.com/en/t/napoli/ischia',''],['↗ Alilauro','https://www.alilauro.it','']]}},
+    {cls:'confirmed',icon:'🏨',icn:'ihotel',title:'Check-in · Hotel Umberto a Mare',who:'both',
+     sub:'Via Soccorso 2, Forio · <span class="badge bp">Conf. 5783.030.187</span>',
+     detail:'13:00–17:00 · 7 nights · Breakfast incl. · PIN 3312 · +39 081 997171',
+     exp:{info:[['Room','Superior Double Sea View · Non-smoking'],['Meals','Breakfast on sea terrace'],['On-site','★ Michelin Ristorante Umberto a Mare'],['Beach','Private sea access']],
+       links:[['↗ umbertoamare.it','https://www.umbertoamare.it/en/',''],['↗ Google Maps','https://maps.google.com/?q=Hotel+Umberto+a+Mare+Forio+Ischia',''],['📞 +39 081 997171','tel:+39081997171','d']]}}
+  ]},
+  {date:'Sun 28 June',name:'Boat tour',sunset:'20:31',events:[
+    {cls:'hl confirmed',icon:'⛵',icn:'iboat',title:'Private boat tour · Ischia & Procida',who:'both',
+     sub:'West Coast srl · Gozzo Fratelli Aprea 750 Open · <span class="badge bt">#340669093</span>',
+     detail:'10:00–17:30 · 2 guests · Bring ID',
+     note:'💶 Balance due: €580.00 &nbsp;(€133.44 paid · total €713.44)',
+     exp:{info:[['On board','Sundeck · canopy · shower · snorkel gear · towels · icebox'],['Start','10:00–11:00 flexible · ends ~17:30'],['Balance','€580 due on day'],['Cancel','Full refund 24h+ notice · weather = full refund'],['After','Back 17:30 → hotel → Soccorso aperitivo → dinner 19:45']],
+       links:[['↗ westcoastischia.it','https://www.westcoastischia.it/en/',''],['↗ Tour info','https://www.westcoastischia.it/en/boat-tour-with-skipper/',''],['📞 +39 338 509 9868','tel:+393385099868','d'],['✉ Email','mailto:westcoastischia@libero.it','d']]}}
+  ]},
+  {date:'Mon 29 June',name:'Epomeo hike day',sunset:'20:31',events:[
+    {cls:'confirmed hl',icon:'🥾',icn:'iboat',title:'Hike · Monte Epomeo (789m)',who:'both',
+     sub:'Via Santa Maria al Monte trail · from Forio · or bus to Fontana',
+     detail:'~2.5–3hr round trip from Fontana · 1,105ft elevation gain · stunning 360° views',
+     exp:{info:[
+       ['Trail','Santa Maria al Monte → Monte Epomeo (AllTrails: 3.1mi out-and-back · hard · 1,374ft gain)'],
+       ['OR via Fontana','Fontana → Monte Epomeo loop (3mi · moderate · 2–2.5hr) — the easiest option'],
+       ['From hotel','Option A: Walk uphill from Forio to Santa Maria al Monte (~45min) then summit (~50min). Total ~2.5–3hr up, same back.'],
+       ['From hotel','Option B (recommended): Take CS or CD bus from Forio to Fontana stop (~30min · €1.50pp). Cross road at the white church statue of Jesus, follow signs to Epomeo (3km · ~1hr up).'],
+       ['Bus tip','Buy tickets in advance at a bar/tabaccheria. Validate on board. Day pass €4.50pp — worth it if you also explore Ischia Porto or other towns.'],
+       ['Summit','789m · Church of San Nicola (carved into tuff rock, 1459) · small museum · 360° views: Capri · Vesuvius · Procida · Ponza · Sorrento'],
+       ['Summit food','★ La Grotta da Fiore — iconic cave restaurant carved into tuff. Bruschetta · rabbit Ischian-style · goat cheese · local wine. Open for lunch daily. Credit cards accepted.'],
+       ['Taxi option','Taxi Forio → Fontana ~€25–28 one-way. Worth it for the return if legs are tired.'],
+       ['What to bring','Good hiking shoes (trail shoes minimum) · 2L water each · sunscreen · light jacket (it\'s fresher at altitude) · snacks']
+     ],
+     links:[
+       ['↗ AllTrails: Fontana–Epomeo (recommended)','https://www.alltrails.com/trail/italy/campania/fontana-monte-epomeo',''],
+       ['↗ AllTrails: Santa Maria–Epomeo (from Forio)','https://www.alltrails.com/trail/italy/campania/santa-maria-al-monte-monte-epomeo',''],
+       ['↗ La Grotta da Fiore (summit restaurant)','https://www.epomeolagrotta.com/',''],
+       ['↗ La Grotta on TripAdvisor','https://www.tripadvisor.com/Restaurant_Review-g580215-d1813570-Reviews-La_Grotta_da_Fiore-Serrara_Fontana_Isola_d_Ischia_Province_of_Naples_Campania.html',''],
+       ['📞 La Grotta da Fiore','tel:+393685599916','d'],
+       ['↗ EAV Bus timetables','https://www.ischiainsider.com/en/bus-schedule',''],
+       ['↗ Ischia hike guide','https://flipflopsincluded.com/mount-epomeo-hike-ischia/','']
+     ]}},
+    {cls:'',icon:'🍽',icn:'idinner',title:'Post-hike dinner · book for 19:45',who:'both',
+     sub:'Sunset 20:31 · back from mountain by mid-afternoon',
+     detail:'',
+     exp:{info:[['Tip','La Grotta da Fiore for lunch on the mountain · then back to hotel to recover before evening'],['Dinner','Book a sunset view table for 19:45 — you\'ll have earned it!']],
+       links:[['↗ Ristorante Umberto a Mare','https://www.umbertoamare.it/en/',''],['↗ Ischia restaurants','https://www.ischiainsider.com/en/restaurants','']]}}
+  ]},
+  {date:'Tue 30 June',name:'Ischia · Saturnino dinner',sunset:'20:32',events:[
+    {cls:'',icon:'🌊',icn:'ifree',title:'Free day on Ischia',who:'both',sub:'',detail:'',exp:{info:[],links:[]}},
+    {cls:'dinner-res',icon:'🍽',icn:'idinner',title:'Dinner · Ristorante Saturnino ★',who:'both',
+     sub:'Via Marina, Porto di Forio · <span class="badge bok">Confirmed</span>',
+     detail:'19:30–21:30 · 2 persons · 15-min grace period',
+     exp:{info:[['Address','Via Soprascaro 17 (Porto di Forio)'],['Phone','+39 081 998296'],['Note','Fresh fish menu · 220+ wines · harbour views'],['History','Founded 1946 · American Philip Dakin fell for Forio'],['Guide','★ Michelin Guide listed']],
+       links:[['↗ ristorantesaturnino.it','https://www.ristorantesaturnino.it/en/',''],['↗ Michelin Guide','https://guide.michelin.com/us/en/campania/forio/restaurant/il-saturnino','d'],['↗ View menu','https://menu.ristorantesaturnino.it/',''],['📞 +39 081 998296','tel:+390819982896','d']]}}
+  ]},
+  {date:'Wed 1 – Fri 3 July',name:'Ischia · latest sunsets',sunset:'20:39',events:[
+    {cls:'',icon:'🌊',icn:'ifree',title:'Free days on Ischia',who:'both',
+     sub:'Latest sunsets of the trip · book dinners for 19:55',detail:'',
+     exp:{info:[['Sunset','20:39 — the latest of the whole trip'],['Dinner','Book 19:55 for full golden hour'],['Option','★ Ristorante Umberto a Mare on site']],
+       links:[['↗ Book Umberto a Mare','https://www.umbertoamare.it/en/',''],['↗ Ischia restaurants','https://www.ischiainsider.com/en/restaurants','']]}}
+  ]},
+  {date:'Sat 4 July',name:'Check-out · ferry · Naples',sunset:'20:38',events:[
+    {cls:'confirmed',icon:'🏨',icn:'ihotel',title:'Check-out · Hotel Umberto a Mare',who:'both',sub:'By 09:00–10:30',detail:'',exp:{info:[],links:[['↗ umbertoamare.it','https://www.umbertoamare.it/en/','']]}},
+    {cls:'tbd',icon:'⛴',icn:'iferry',title:'Ferry · Forio → Naples',who:'both',tbd:true,sub:'Morning crossing · ~50min',detail:'',
+     exp:{info:[['Route','Forio → Molo Beverello'],['Tip','Book ahead — Sat mornings fill up']],
+       links:[['↗ Ferryhopper','https://www.ferryhopper.com/en/ferry-routes/direct/ferry-naples-ischia-traghetti',''],['↗ NaplesBayFerry','https://www.naplesbayferry.com/en/t/ischia/napoli','']]}},
+    {cls:'tbd',icon:'🏛',icn:'itbd',title:'Hotel in Naples',who:'both',tbd:true,sub:'1 night · 4–5 July · last night together',detail:'',
+     exp:{info:[['Area','Chiaia or Posillipo · both fly from NAP on 5 Jul']],
+       links:[['↗ Booking.com','https://www.booking.com/searchresults.html?city=-122994','']]}}
+  ]},
+  {date:'Sun 5 July',name:'Everyone heads home',sunset:'20:38',events:[
+    {cls:'confirmed',icon:'✈',icn:'ih',title:'Naples → Munich',who:'h',
+     sub:'Lufthansa LH1877 · <span class="badge bg">7OTLBS</span>',
+     detail:'Departs NAP 13:05 · Arrives MUC 14:50',
+     exp:{info:[],links:[['↗ Manage booking','https://www.lufthansa.com/gb/en/my-bookings','']]}},
+    {cls:'connector',label:'1h 55min connection at MUC'},
+    {cls:'confirmed',icon:'✈',icn:'ih',title:'Munich → Montreal',who:'h',
+     sub:'Lufthansa LH474 · <span class="badge bg">7OTLBS</span>',
+     detail:'Departs MUC T2 16:45 · Arrives YUL 18:50 · 8h 05min',
+     exp:{info:[],links:[['↗ Manage booking','https://www.lufthansa.com/gb/en/my-bookings','']]}},
+    {cls:'',icon:'🚌',icn:'ibus',title:'Late checkout → taxi to airport',who:'m',
+     sub:'~30min to NAP Capodichino · Leave hotel ~13:00',detail:'',
+     exp:{info:[['Taxi','~€25–35 from city centre'],['Bag drop','Opens 13:45 · closes 15:05'],['Tip','Leave hotel no later than 13:00']],
+       links:[]}},
+    {cls:'confirmed',icon:'✈',icn:'im',title:'Naples → Barcelona T2C',who:'m',
+     sub:'easyJet EJU7158 · <span class="badge ba">KCCXCKQ</span>',
+     detail:'Departs NAP 15:45 · Arrives BCN 17:45 · Seat 3A',
+     exp:{info:[['Bag drop','Opens 13:45 · closes 15:05'],['Bags','1 small cabin + 1 large cabin']],
+       links:[['↗ Manage booking','https://www.easyjet.com/en/secure/MyEasyJet.mvc/ViewBooking?bookingReference=KCCXCKQ',''],['↗ easyjet.com','https://www.easyjet.com','']]}},
+    {cls:'connector',label:'connection at BCN Terminal 2C'},
+    {cls:'confirmed',icon:'✈',icn:'im',title:'Barcelona → Granada',who:'m',
+     sub:'Vueling VY2016 · <span class="badge bb">SJCB4Z</span>',
+     detail:'Departs BCN 20:30 · Arrives GRX 22:00 · Seat 7F',
+     exp:{info:[],links:[['↗ Manage booking','https://www.vueling.com/en/manage-your-trip/my-booking','']]}}
+  ]}
+];
+
+const whoMap={m:'<span class="who wm">Marshal</span>',h:'<span class="who wh">Heidi</span>',both:'<span class="who wb">Both</span>'};
+
+function buildTimeline(){
+  const tl=document.getElementById('timeline');
+  days.forEach((day,di)=>{
+    const dg=document.createElement('div');
+    dg.className='day-group';
+    const sunset=day.sunset?`<div class="day-sunset">Sunset ${day.sunset} · Dinner ${parseFloat(day.sunset)>=20.58?'19:55':'19:45'}</div>`:'';
+    dg.innerHTML=`<div class="day-header" onclick="toggleDay(${di})">
+      <div class="day-date">${day.date}</div>
+      <div class="day-name-lbl">${day.name}</div>
+      ${sunset}
+      <span class="day-toggle open" id="tog-${di}">▾</span>
+    </div>
+    <div class="events" id="evts-${di}">${renderEvts(day.events,di)}</div>
+    <div class="day-divider"></div>`;
+    tl.appendChild(dg);
+  });
+}
+
+function renderEvts(evts,di){
+  return evts.map((e,ei)=>{
+    if(e.cls==='connector') return `<div class="connector">${e.label}</div>`;
+    const tbd=e.tbd?'<span class="tbd-badge">To book</span>':'';
+    const who=e.who?whoMap[e.who]:'';
+    const hasExp=e.exp&&(e.exp.info.length>0||e.exp.links.length>0);
+    const infoHtml=e.exp?e.exp.info.map(([k,v])=>`<div class="ik">${k}</div><div class="iv">${v}</div>`).join(''):'';
+    const linksHtml=e.exp?e.exp.links.map(([l,u,c])=>`<a class="el ${c}" href="${u}" target="_blank">${l}</a>`).join(''):'';
+    const expHtml=hasExp?`<div class="event-expanded" id="exp-${di}-${ei}">
+      ${infoHtml?`<div class="info-grid">${infoHtml}</div>`:''}
+      ${linksHtml?`<div class="event-links">${linksHtml}</div>`:''}
+    </div>`:'';
+    const note=e.note?`<div class="bal">${e.note}</div>`:'';
+    return `<div class="event ${e.cls}" onclick="toggleEvt(${di},${ei})">
+      <div class="event-icon ${e.icn}">${e.icon}</div>
+      <div class="event-body">
+        <div class="event-title">${e.title} ${tbd} ${who}</div>
+        ${e.sub?`<div class="event-sub">${e.sub}</div>`:''}
+        ${e.detail?`<div class="event-detail">${e.detail}</div>`:''}
+        ${expHtml}
+      </div>
+    </div>${note}`;
+  }).join('');
+}
+
+function toggleDay(di){
+  const el=document.getElementById(`evts-${di}`);
+  const tog=document.getElementById(`tog-${di}`);
+  el.classList.toggle('collapsed');
+  tog.classList.toggle('open');
+}
+
+function toggleEvt(di,ei){
+  const exp=document.getElementById(`exp-${di}-${ei}`);
+  if(!exp) return;
+  exp.classList.toggle('open');
+}
+
+buildTimeline();
+</script>
+</body>
+</html>
