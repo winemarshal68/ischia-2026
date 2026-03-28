@@ -894,6 +894,124 @@ function toggleEvt(di,ei){
 }
 
 buildTimeline();
+
+// ── PIN LOCK ────────────────────────────────────────────
+(function(){
+  const HASH='964605676364239f38e267627ad8d326f12704456bae111c8da3848eca4622ee';
+  const LS_KEY='ischia_unlocked';
+  const EXPIRY_MS=60*60*1000; // 1 hour
+  const MAX_ATTEMPTS=3;
+  const COOLDOWN_MS=10000;
+
+  const overlay=document.getElementById('pin-overlay');
+  const dots=[0,1,2,3,4].map(i=>document.getElementById('pd'+i));
+  const errorEl=document.getElementById('pin-error');
+  const keys=document.querySelectorAll('.pkey');
+
+  let input='';
+  let attempts=0;
+  let locked=false;
+
+  // ── Session check ──
+  try{
+    const ts=parseInt(localStorage.getItem(LS_KEY)||'0',10);
+    if(Date.now()-ts<EXPIRY_MS){ overlay.classList.add('hidden'); return; }
+  }catch(e){}
+
+  // ── Render dots ──
+  function renderDots(){
+    dots.forEach((d,i)=>d.classList.toggle('on',i<input.length));
+  }
+
+  // ── SHA-256 helper ──
+  async function sha256(str){
+    const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  }
+
+  // ── Unlock ──
+  function unlock(){
+    overlay.classList.add('fade-out');
+    overlay.addEventListener('transitionend',()=>overlay.classList.add('hidden'),{once:true});
+    try{ localStorage.setItem(LS_KEY,Date.now().toString()); }catch(e){}
+  }
+
+  // ── Error shake ──
+  function showError(msg){
+    errorEl.textContent=msg;
+    errorEl.classList.add('show');
+    const panel=document.getElementById('pin-panel');
+    panel.classList.remove('pin-shake');
+    void panel.offsetWidth; // reflow to restart animation
+    panel.classList.add('pin-shake');
+    panel.addEventListener('animationend',()=>panel.classList.remove('pin-shake'),{once:true});
+    setTimeout(()=>errorEl.classList.remove('show'),1500);
+  }
+
+  // ── Cooldown ──
+  function startCooldown(){
+    locked=true;
+    keys.forEach(k=>k.setAttribute('data-disabled','1'));
+    let remaining=Math.ceil(COOLDOWN_MS/1000);
+    errorEl.textContent='Too many attempts — wait '+remaining+'s';
+    errorEl.classList.add('show');
+    const t=setInterval(()=>{
+      remaining--;
+      if(remaining<=0){
+        clearInterval(t);
+        locked=false;
+        attempts=0;
+        keys.forEach(k=>k.removeAttribute('data-disabled'));
+        errorEl.classList.remove('show');
+      } else {
+        errorEl.textContent='Too many attempts — wait '+remaining+'s';
+      }
+    },1000);
+  }
+
+  // ── Handle digit input ──
+  async function handleInput(d){
+    if(locked) return;
+    if(d==='del'){
+      input=input.slice(0,-1);
+      renderDots();
+      return;
+    }
+    if(input.length>=5) return;
+    input+=d;
+    renderDots();
+    if(input.length===5){
+      const h=await sha256(input);
+      if(h===HASH){
+        unlock();
+      } else {
+        attempts++;
+        input='';
+        renderDots();
+        if(attempts>=MAX_ATTEMPTS){
+          startCooldown();
+        } else {
+          showError('Incorrect PIN\u2009—\u2009try again');
+        }
+      }
+    }
+  }
+
+  // ── Numpad clicks ──
+  keys.forEach(k=>{
+    k.addEventListener('click',()=>{
+      if(k.getAttribute('data-disabled')) return;
+      handleInput(k.dataset.d);
+    });
+  });
+
+  // ── Keyboard input ──
+  document.addEventListener('keydown',e=>{
+    if(overlay.classList.contains('hidden')) return;
+    if(e.key>='0'&&e.key<='9') handleInput(e.key);
+    else if(e.key==='Backspace') handleInput('del');
+  });
+})();
 </script>
 </body>
 </html>
