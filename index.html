@@ -911,6 +911,8 @@ buildTimeline();
   let input='';
   let attempts=0;
   let locked=false;
+  let verifying=false;
+  let errorTimeout=null;
 
   // ── Session check ──
   try{
@@ -933,6 +935,7 @@ buildTimeline();
   function unlock(){
     overlay.classList.add('fade-out');
     overlay.addEventListener('transitionend',()=>overlay.classList.add('hidden'),{once:true});
+    setTimeout(()=>overlay.classList.add('hidden'),500);
     try{ localStorage.setItem(LS_KEY,Date.now().toString()); }catch(e){}
   }
 
@@ -945,11 +948,13 @@ buildTimeline();
     void panel.offsetWidth; // reflow to restart animation
     panel.classList.add('pin-shake');
     panel.addEventListener('animationend',()=>panel.classList.remove('pin-shake'),{once:true});
-    setTimeout(()=>errorEl.classList.remove('show'),1500);
+    clearTimeout(errorTimeout);
+    errorTimeout=setTimeout(()=>errorEl.classList.remove('show'),1500);
   }
 
   // ── Cooldown ──
   function startCooldown(){
+    clearTimeout(errorTimeout);
     locked=true;
     keys.forEach(k=>k.setAttribute('data-disabled','1'));
     let remaining=Math.ceil(COOLDOWN_MS/1000);
@@ -981,7 +986,10 @@ buildTimeline();
     input+=d;
     renderDots();
     if(input.length===5){
+      if(verifying) return;
+      verifying=true;
       const h=await sha256(input);
+      verifying=false;
       if(h===HASH){
         unlock();
       } else {
