@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PIN Lock Mockup</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #0d1f2d;
+  font-family: 'DM Mono', monospace;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+body::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 70% 110%, rgba(42,109,158,.5) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 40% at 15% 85%, rgba(200,112,58,.22) 0%, transparent 50%);
+}
+
+/* Blurred site preview behind the overlay */
+.site-preview {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  grid-template-rows: 160px 48px 1fr;
+  opacity: 0.35;
+  filter: blur(6px);
+  pointer-events: none;
+}
+.preview-hero {
+  background: #1a4d6e;
+  padding: 32px 48px;
+}
+.preview-h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 64px;
+  font-weight: 300;
+  color: #faf9f7;
+  line-height: 0.92;
+}
+.preview-h1 em { color: #e8904a; font-style: italic; }
+.preview-sub { font-size: 11px; color: rgba(200,232,245,.5); margin-top: 12px; letter-spacing: .06em; }
+.preview-tabs {
+  background: #faf9f7;
+  display: flex;
+  gap: 0;
+  padding: 0 48px;
+  border-bottom: 1px solid rgba(26,77,110,.13);
+  align-items: flex-end;
+}
+.preview-tab {
+  padding: 12px 20px;
+  font-size: 11px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: #6b8499;
+  border-bottom: 2px solid transparent;
+}
+.preview-tab.a { color: #1a4d6e; border-bottom-color: #1a4d6e; }
+.preview-body {
+  background: #f5efe6;
+  padding: 36px 48px;
+  display: flex;
+  gap: 32px;
+}
+.preview-main { flex: 1; display: flex; flex-direction: column; gap: 12px; }
+.preview-card {
+  background: #faf9f7;
+  border: 1px solid rgba(26,77,110,.13);
+  border-radius: 10px;
+  height: 64px;
+  border-left: 3px solid #1a4d6e;
+}
+.preview-card:nth-child(2) { border-left-color: #c8703a; height: 48px; }
+.preview-card:nth-child(3) { border-left-color: #1a4d6e; }
+.preview-sidebar { width: 280px; display: flex; flex-direction: column; gap: 12px; }
+.preview-scard {
+  background: #faf9f7;
+  border: 1px solid rgba(26,77,110,.13);
+  border-radius: 12px;
+  height: 100px;
+}
+
+/* PIN overlay */
+.pin-overlay {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+  padding: 48px 40px;
+  background: rgba(13, 31, 45, 0.88);
+  border: 1px solid rgba(74,159,200,.2);
+  border-radius: 20px;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 24px 80px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.04);
+  min-width: 320px;
+  max-width: 380px;
+  width: 100%;
+}
+
+.pin-eyebrow {
+  font-size: 10px;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: #4a9fc8;
+  text-align: center;
+}
+
+.pin-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 36px;
+  font-weight: 300;
+  color: #faf9f7;
+  text-align: center;
+  line-height: 1.1;
+  margin-top: -8px;
+}
+.pin-title em { font-style: italic; color: #e8904a; }
+
+.pin-sub {
+  font-size: 11px;
+  color: rgba(200,232,245,.45);
+  text-align: center;
+  letter-spacing: .06em;
+  margin-top: -16px;
+}
+
+/* PIN dots */
+.pin-dots {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  justify-content: center;
+}
+.pin-dot {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(74,159,200,.5);
+  transition: all .15s;
+  background: transparent;
+}
+.pin-dot.filled {
+  background: #4a9fc8;
+  border-color: #4a9fc8;
+  box-shadow: 0 0 8px rgba(74,159,200,.4);
+}
+.pin-dot.filled.d2 { background: #2a6d9e; border-color: #2a6d9e; }
+.pin-dot.filled.d3 { background: #1a4d6e; border-color: #1a4d6e; }
+
+/* Numpad */
+.pin-pad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  width: 100%;
+}
+.pin-key {
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 12px;
+  color: #faf9f7;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 26px;
+  font-weight: 300;
+  padding: 14px 0;
+  text-align: center;
+  cursor: pointer;
+  transition: background .12s, border-color .12s;
+  user-select: none;
+}
+.pin-key:hover { background: rgba(74,159,200,.18); border-color: rgba(74,159,200,.3); }
+.pin-key:active { background: rgba(74,159,200,.3); }
+.pin-key.del {
+  font-family: 'DM Mono', monospace;
+  font-size: 14px;
+  color: rgba(200,232,245,.5);
+  letter-spacing: .05em;
+}
+.pin-key.zero { grid-column: 2; }
+
+.pin-error {
+  font-size: 11px;
+  color: #c8703a;
+  letter-spacing: .06em;
+  text-align: center;
+  opacity: 0;
+  transition: opacity .2s;
+  height: 16px;
+  margin-top: -16px;
+}
+.pin-error.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<!-- blurred site preview behind -->
+<div class="site-preview">
+  <div class="preview-hero">
+    <div class="preview-h1">Ischia<br><em>2026</em></div>
+    <div class="preview-sub">Marshal &amp; Heidi · 26 Jun – 10 Jul</div>
+  </div>
+  <div class="preview-tabs">
+    <div class="preview-tab a">Overview</div>
+    <div class="preview-tab">Itinerary</div>
+    <div class="preview-tab">Logistics</div>
+    <div class="preview-tab">Budget</div>
+  </div>
+  <div class="preview-body">
+    <div class="preview-main">
+      <div class="preview-card"></div>
+      <div class="preview-card"></div>
+      <div class="preview-card"></div>
+    </div>
+    <div class="preview-sidebar">
+      <div class="preview-scard"></div>
+      <div class="preview-scard" style="height:80px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- PIN overlay -->
+<div class="pin-overlay">
+  <div class="pin-eyebrow">Private · Ischia 2026</div>
+  <div class="pin-title">Marshal &amp; <em>Heidi</em></div>
+  <div class="pin-sub">Enter PIN to continue</div>
+
+  <div class="pin-dots">
+    <div class="pin-dot filled"></div>
+    <div class="pin-dot filled d2"></div>
+    <div class="pin-dot filled d3"></div>
+    <div class="pin-dot"></div>
+    <div class="pin-dot"></div>
+  </div>
+
+  <div class="pin-pad">
+    <div class="pin-key">1</div>
+    <div class="pin-key">2</div>
+    <div class="pin-key">3</div>
+    <div class="pin-key">4</div>
+    <div class="pin-key">5</div>
+    <div class="pin-key">6</div>
+    <div class="pin-key">7</div>
+    <div class="pin-key">8</div>
+    <div class="pin-key">9</div>
+    <div class="pin-key zero">0</div>
+    <div class="pin-key del">⌫</div>
+  </div>
+
+  <div class="pin-error show">Incorrect PIN — try again</div>
+</div>
+
+</body>
+</html>
