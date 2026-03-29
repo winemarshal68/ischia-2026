@@ -203,15 +203,14 @@ footer span{color:var(--sunset);}
 #pin-error.show{opacity:1;}
 @keyframes pin-shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
 .pin-shake{animation:pin-shake .35s ease;}
-.cal-btn{display:inline-flex;align-items:center;gap:6px;font-size:11px;letter-spacing:.05em;color:var(--foam);background:rgba(74,159,200,.18);border:1px solid rgba(74,159,200,.35);border-radius:6px;padding:6px 14px;text-decoration:none;transition:background .2s;}
-.cal-btn:hover{background:rgba(74,159,200,.3);}
-.cal-wrap{position:relative;display:inline-flex;align-items:center;gap:0;}
-.cal-help{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;font-size:11px;font-weight:700;color:var(--night);background:var(--foam);border-radius:50%;cursor:pointer;margin-left:6px;user-select:none;position:relative;}
-.cal-help:hover{background:rgba(74,159,200,.4);}
-.cal-tooltip{display:none;position:absolute;top:calc(100% + 10px);left:50%;transform:translateX(-50%);width:340px;background:var(--night);color:var(--foam);font-size:11px;font-weight:400;line-height:1.6;padding:16px;border-radius:10px;border:1px solid rgba(74,159,200,.3);box-shadow:0 8px 32px rgba(0,0,0,.4);z-index:100;text-align:left;letter-spacing:.02em;}
+.cal-btn{font-size:24px;text-decoration:none;line-height:1;}
+.cal-wrap{position:relative;display:flex;flex-direction:column;align-items:center;}
+.cal-help{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;font-size:9px;font-weight:700;color:var(--night);background:var(--sea-light);border-radius:50%;cursor:pointer;user-select:none;position:absolute;top:-4px;right:-8px;}
+.cal-help:hover{background:var(--foam);}
+.cal-tooltip{display:none;position:absolute;top:calc(100% + 10px);left:50%;transform:translateX(-80%);width:340px;background:var(--night);color:var(--foam);font-size:11px;font-weight:400;line-height:1.6;padding:16px;border-radius:10px;border:1px solid rgba(74,159,200,.3);box-shadow:0 8px 32px rgba(0,0,0,.4);z-index:100;text-align:left;letter-spacing:.02em;}
 .cal-tooltip code{font-size:9px;background:rgba(74,159,200,.15);padding:2px 5px;border-radius:3px;word-break:break-all;}
 .cal-help.show .cal-tooltip{display:block;}
-@media(max-width:700px){.cal-tooltip{width:280px;left:auto;right:-10px;transform:none;}}
+@media(max-width:700px){.cal-tooltip{width:280px;transform:translateX(-90%);}}
 .event.ai-added{border-left:2px dashed var(--sea-light);margin-left:-2px;}
 .event.ai-added .event-title::after{content:'email-added';font-size:9px;color:var(--muted);background:var(--foam);padding:1px 6px;border-radius:3px;margin-left:8px;letter-spacing:.04em;vertical-align:middle;}
 </style>
@@ -258,15 +257,6 @@ footer span{color:var(--sunset);}
       <div class="travelers-row">
         <div class="traveler"><div class="tdot tdot-m">MW</div>Marshal Walker · Granada</div>
         <div class="traveler"><div class="tdot tdot-h">HM</div>Heidi Melbostad · Montreal</div>
-        <span class="cal-wrap">
-          <a href="https://ischia-email-worker.still-tooth-533d.workers.dev/calendar.ics" class="cal-btn">📅 Add to Calendar</a><span class="cal-help" onclick="this.classList.toggle('show')">?<span class="cal-tooltip">
-<b>Subscribe for auto-updates</b><br><br>
-<b>Google Calendar:</b> Settings → Add calendar → From URL → paste:<br>
-<code>https://ischia-email-worker.still-tooth-533d.workers.dev/calendar.ics</code><br><br>
-<b>Apple Calendar:</b> File → New Calendar Subscription → paste the same URL<br><br>
-<b>Or just click the button</b> to download and import the .ics file directly.<br><br>
-The calendar auto-updates — when either of us emails a reservation to <b>trip@pedalonpedaloff.com</b>, it appears in the subscribed calendar on the next sync (Google syncs roughly every 12–24 hours, Apple Calendar more frequently).</span></span>
-        </span>
       </div>
     </div>
     <div class="hero-badge">
@@ -283,6 +273,17 @@ The calendar auto-updates — when either of us emails a reservation to <b>trip@
   <div class="stat"><div class="stat-num">2</div><div class="stat-label">Ferries booked</div></div>
   <div class="stat"><div class="stat-num">1★</div><div class="stat-label">Dinner booked</div></div>
   <div class="stat"><div class="stat-num">19:45</div><div class="stat-label">Dinner time</div></div>
+  <div class="stat cal-wrap">
+    <a href="https://ischia-email-worker.still-tooth-533d.workers.dev/calendar.ics" class="cal-btn">📅</a>
+    <span class="cal-help" onclick="event.stopPropagation();this.classList.toggle('show')">?<span class="cal-tooltip">
+<b>Subscribe for auto-updates</b><br><br>
+<b>Google Calendar:</b> Settings → Add calendar → From URL → paste:<br>
+<code>https://ischia-email-worker.still-tooth-533d.workers.dev/calendar.ics</code><br><br>
+<b>Apple Calendar:</b> File → New Calendar Subscription → paste the same URL<br><br>
+<b>Or just click the button</b> to download and import the .ics file directly.<br><br>
+The calendar auto-updates — when either of us emails a reservation to <b>trip@pedalonpedaloff.com</b>, it appears in the subscribed calendar on the next sync (Google syncs roughly every 12–24 hours, Apple Calendar more frequently).</span></span>
+    <div class="stat-label">Add to Cal</div>
+  </div>
 </div>
 
 <div class="tabs-wrap">
