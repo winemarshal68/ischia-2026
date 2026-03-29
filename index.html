@@ -203,6 +203,8 @@ footer span{color:var(--sunset);}
 #pin-error.show{opacity:1;}
 @keyframes pin-shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
 .pin-shake{animation:pin-shake .35s ease;}
+.event.ai-added{border-left:2px dashed var(--sea-light);margin-left:-2px;}
+.event.ai-added .event-title::after{content:'email-added';font-size:9px;color:var(--muted);background:var(--foam);padding:1px 6px;border-radius:3px;margin-left:8px;letter-spacing:.04em;vertical-align:middle;}
 </style>
 </head>
 <body>
@@ -908,7 +910,26 @@ function toggleEvt(di,ei){
   exp.classList.toggle('open');
 }
 
-buildTimeline();
+// ── FETCH & MERGE EMAIL-ADDED RESERVATIONS ──
+(async function(){
+  try{
+    const res=await fetch('https://ischia-email-worker.still-tooth-533d.workers.dev/reservations.json');
+    if(res.ok){
+      const data=await res.json();
+      if(data.reservations&&data.reservations.length){
+        data.reservations.forEach(r=>{
+          const day=days.find(d=>d.date===r.targetDate);
+          if(day){
+            const evt=Object.assign({},r.event);
+            evt.cls=(evt.cls||'')+' ai-added';
+            day.events.push(evt);
+          }
+        });
+      }
+    }
+  }catch(e){/* static data renders fine without remote reservations */}
+  buildTimeline();
+})();
 
 // ── PIN LOCK ────────────────────────────────────────────
 (function(){

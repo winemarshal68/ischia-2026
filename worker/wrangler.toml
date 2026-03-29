@@ -1,0 +1,11 @@
+name = "ischia-email-worker"
+main = "src/index.ts"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+[[r2_buckets]]
+binding = "RESERVATIONS"
+bucket_name = "ischia-reservations"
+
+[vars]
+ALLOWED_SENDERS = "marshalwalker@gmail.com,heidi.melbostad@gmail.com"
