@@ -143,6 +143,121 @@ async function verifyPin(pin: string): Promise<boolean> {
   return hash === PIN_HASH;
 }
 
+interface CalendarEvent {
+  date: string;
+  time?: string;
+  endTime?: string;
+  tz: string;
+  title: string;
+  location?: string;
+  desc?: string;
+  allDay?: boolean;
+}
+
+// Map website date strings to YYYYMMDD for email-added reservations
+const DATE_MAP: Record<string, string> = {
+  'Wed 24 June': '20260624', 'Thu 25 June': '20260625', 'Fri 26 June': '20260626',
+  'Sat 27 June': '20260627', 'Sun 28 June': '20260628', 'Mon 29 June': '20260629',
+  'Tue 30 June': '20260630', 'Wed 1 – Fri 3 July': '20260701',
+  'Sat 4 July': '20260704', 'Sun 5 July': '20260705',
+};
+
+function icsEscape(s: string): string {
+  return s.replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
+}
+
+function foldLine(line: string): string {
+  const bytes: string[] = [];
+  let cur = '';
+  for (const ch of line) {
+    if (new TextEncoder().encode(cur + ch).length > 74) {
+      bytes.push(cur);
+      cur = ' ' + ch;
+    } else {
+      cur += ch;
+    }
+  }
+  bytes.push(cur);
+  return bytes.join('\r\n');
+}
+
+function buildVEvent(ev: CalendarEvent, uid: string): string {
+  const lines: string[] = ['BEGIN:VEVENT'];
+  lines.push(`UID:${uid}@pedalonpedaloff.com`);
+  lines.push(`DTSTAMP:20260329T000000Z`);
+
+  if (ev.allDay || !ev.time) {
+    lines.push(`DTSTART;VALUE=DATE:${ev.date}`);
+    const next = new Date(
+      parseInt(ev.date.slice(0, 4)),
+      parseInt(ev.date.slice(4, 6)) - 1,
+      parseInt(ev.date.slice(6, 8)) + 1
+    );
+    const endDate = `${next.getFullYear()}${String(next.getMonth() + 1).padStart(2, '0')}${String(next.getDate()).padStart(2, '0')}`;
+    lines.push(`DTEND;VALUE=DATE:${endDate}`);
+  } else {
+    lines.push(`DTSTART;TZID=${ev.tz}:${ev.date}T${ev.time}00`);
+    if (ev.endTime && ev.endTime !== ev.time) {
+      lines.push(`DTEND;TZID=${ev.tz}:${ev.date}T${ev.endTime}00`);
+    } else {
+      lines.push(`DTEND;TZID=${ev.tz}:${ev.date}T${ev.time}00`);
+    }
+  }
+
+  lines.push(`SUMMARY:${icsEscape(ev.title)}`);
+  if (ev.location) lines.push(`LOCATION:${icsEscape(ev.location)}`);
+  if (ev.desc) lines.push(`DESCRIPTION:${icsEscape(ev.desc)}`);
+  lines.push('END:VEVENT');
+  return lines.map(foldLine).join('\r\n');
+}
+
+function stripHtml(s: string): string {
+  return s.replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&nbsp;/g, ' ').trim();
+}
+
+async function generateIcs(env: Env): Promise<string> {
+  // Load static calendar events from R2
+  const staticObj = await env.RESERVATIONS.get('calendar-events.json');
+  const staticEvents: CalendarEvent[] = staticObj ? await staticObj.json() : [];
+
+  // Load email-added reservations
+  const resData = await getReservations(env);
+
+  const parts: string[] = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//Ischia 2026//pedalonpedaloff.com//EN',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+    'X-WR-CALNAME:Ischia 2026',
+    'X-WR-TIMEZONE:Europe/Rome',
+  ];
+
+  // Add static events
+  staticEvents.forEach((ev, i) => {
+    parts.push(buildVEvent(ev, `static-${i}`));
+  });
+
+  // Add email-added reservations as calendar events
+  resData.reservations.forEach((r) => {
+    const dateStr = DATE_MAP[r.targetDate];
+    if (!dateStr) return;
+
+    const calEv: CalendarEvent = {
+      date: dateStr,
+      tz: 'Europe/Rome',
+      title: stripHtml(r.event.title),
+      location: stripHtml(r.event.sub.split('·')[0] || ''),
+      desc: stripHtml(`${r.event.detail || ''}${r.event.exp?.info?.map(([k, v]) => `\\n${k}: ${v}`).join('') || ''}`),
+      allDay: true,
+    };
+    parts.push(buildVEvent(calEv, r.id));
+  });
+
+  parts.push('END:VCALENDAR');
+  return parts.join('\r\n');
+}
+
 export default {
   async email(message: ForwardableEmailMessage, env: Env): Promise<void> {
     const allowedSenders = env.ALLOWED_SENDERS.split(',').map(s => s.trim().toLowerCase());
@@ -209,6 +324,18 @@ export default {
     // CORS preflight
     if (request.method === 'OPTIONS') {
       return new Response(null, { status: 204, headers: cors });
+    }
+
+    // GET /calendar.ics
+    if (request.method === 'GET' && url.pathname === '/calendar.ics') {
+      const ics = await generateIcs(env);
+      return new Response(ics, {
+        headers: {
+          'Content-Type': 'text/calendar; charset=utf-8',
+          'Content-Disposition': 'attachment; filename="ischia-2026.ics"',
+          'Cache-Control': 'no-cache',
+        },
+      });
     }
 
     // GET /reservations.json

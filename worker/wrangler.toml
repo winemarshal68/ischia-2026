@@ -9,3 +9,6 @@ bucket_name = "ischia-reservations"
 
 [vars]
 ALLOWED_SENDERS = "marshalwalker@gmail.com,heidi.melbostad@gmail.com"
+
+[[send_email]]
+name = "SEB"

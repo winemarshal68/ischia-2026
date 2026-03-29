@@ -203,6 +203,8 @@ footer span{color:var(--sunset);}
 #pin-error.show{opacity:1;}
 @keyframes pin-shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
 .pin-shake{animation:pin-shake .35s ease;}
+.cal-btn{display:inline-flex;align-items:center;gap:6px;font-size:11px;letter-spacing:.05em;color:var(--foam);background:rgba(74,159,200,.18);border:1px solid rgba(74,159,200,.35);border-radius:6px;padding:6px 14px;text-decoration:none;transition:background .2s;}
+.cal-btn:hover{background:rgba(74,159,200,.3);}
 .event.ai-added{border-left:2px dashed var(--sea-light);margin-left:-2px;}
 .event.ai-added .event-title::after{content:'email-added';font-size:9px;color:var(--muted);background:var(--foam);padding:1px 6px;border-radius:3px;margin-left:8px;letter-spacing:.04em;vertical-align:middle;}
 </style>
@@ -249,6 +251,7 @@ footer span{color:var(--sunset);}
       <div class="travelers-row">
         <div class="traveler"><div class="tdot tdot-m">MW</div>Marshal Walker · Granada</div>
         <div class="traveler"><div class="tdot tdot-h">HM</div>Heidi Melbostad · Montreal</div>
+        <a href="https://ischia-email-worker.still-tooth-533d.workers.dev/calendar.ics" class="cal-btn" title="Subscribe in Google Calendar, Apple Calendar, or Outlook">📅 Add to Calendar</a>
       </div>
     </div>
     <div class="hero-badge">
