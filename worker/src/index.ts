@@ -49,7 +49,7 @@ Output ONLY valid JSON (no markdown, no backticks) with this exact structure:
   "event": {
     "cls": "confirmed",
     "icon": "<emoji: ✈ flight, 🏨 hotel, 🍽 restaurant, ⛴ ferry, 🚤 boat, 🚌 bus, 🎫 activity>",
-    "icn": "<icon class: im=blue(Marshal flight), ih=green(Heidi flight), ihotel=green, idinner=amber, iferry=teal, iboat=blue, ibus=amber, itbd=amber>",
+    "icn": "<icon class — use EXACTLY one of these values: im, ih, ihotel, idinner, iferry, iboat, ibus, itbd — NO suffixes, NO equals signs, just the bare class name>",
     "title": "<venue/service name>",
     "who": "<m=Marshal only, h=Heidi only, both=both travelers>",
     "sub": "<address or route · time · add confirmation as: <span class=\\"badge bp\\">Conf. XXXX</span>>",
