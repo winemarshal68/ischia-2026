@@ -349,21 +349,7 @@ The calendar auto-updates — when either of us emails a reservation to <b>trip@
 
   <div class="scard">
     <div class="scard-head"><div class="scard-title">Sunset & Dinner Guide</div></div>
-    <div class="scard-body">
-      <div class="sun-head"><span>Date</span><span>Sunset</span><span>Book for</span></div>
-      <div class="srow"><span class="srow-d">25 Jun · Naples</span><span class="srow-s">20:29</span><span class="srow-t">19:45</span></div>
-      <div class="srow"><span class="srow-d">26 Jun · Naples</span><span class="srow-s">20:29</span><span class="srow-t">19:45</span></div>
-      <div class="srow"><span class="srow-d">27 Jun · Ischia</span><span class="srow-s">20:30</span><span class="srow-t">19:45</span></div>
-      <div class="srow"><span class="srow-d">28 Jun · Ischia</span><span class="srow-s">20:31</span><span class="srow-t">19:45</span></div>
-      <div class="srow"><span class="srow-d">29 Jun · Ischia</span><span class="srow-s">20:31</span><span class="srow-t">19:45</span></div>
-      <div class="srow ok"><span class="srow-d">30 Jun · Saturnino ✓</span><span class="srow-s">20:32</span><span class="srow-t">19:30 ✓</span></div>
-      <div class="srow"><span class="srow-d">1 Jul · Ischia</span><span class="srow-s">20:39</span><span class="srow-t">19:55</span></div>
-      <div class="srow"><span class="srow-d">2 Jul · Ischia</span><span class="srow-s">20:39</span><span class="srow-t">19:55</span></div>
-      <div class="srow"><span class="srow-d">3 Jul · Ischia</span><span class="srow-s">20:39</span><span class="srow-t">19:55</span></div>
-      <div class="srow"><span class="srow-d">4 Jul · Naples</span><span class="srow-s">20:38</span><span class="srow-t">19:55</span></div>
-      <div class="srow"><span class="srow-d">5 Jul · Naples</span><span class="srow-s">20:38</span><span class="srow-t">19:55</span></div>
-      <p class="sun-note">Forio faces west — Soccorso church terrace is 5 min from hotel. In Naples: Posillipo & Lungomare face the Gulf of Naples.</p>
-    </div>
+    <div class="scard-body" id="sunset-table-body"></div>
   </div>
 </div>
 </div>
@@ -1077,6 +1063,38 @@ function toggleDay(di){
   tog.classList.toggle('open');
 }
 
+function buildSunsetTable(){
+  const body=document.getElementById('sunset-table-body');
+  if(!body)return;
+  // Naples dates for this trip
+  const naplesPattern=/25 June|26 June|4 July|5 July/;
+  let html='<div class="sun-head"><span>Date</span><span>Sunset</span><span>Dinner</span></div>';
+  days.forEach(day=>{
+    if(!day.sunset)return;
+    // Find confirmed dinner event (cls contains dinner-res)
+    const dinnerEvt=day.events.find(e=>e.cls&&e.cls.includes('dinner-res'));
+    const timeMatch=dinnerEvt?(dinnerEvt.sub||'').match(/(\d{2}:\d{2})/):null;
+    const dinnerTime=timeMatch?timeMatch[1]:null;
+    // Build short date label e.g. "27 Jun"
+    const shortDate=day.date
+      .replace(/^(Mon|Tue|Wed|Thu|Fri|Sat|Sun) /,'')
+      .replace('June','Jun').replace('July','Jul');
+    const loc=naplesPattern.test(day.date)?'Naples':'Ischia';
+    const label=`${shortDate} · ${loc}`;
+    // Suggested time based on sunset (>= 20:35 → 19:55, else 19:45)
+    const sunsetNum=parseFloat(day.sunset);
+    const suggested=sunsetNum>=20.35?'19:55':'19:45';
+    if(dinnerEvt&&dinnerTime){
+      const name=dinnerEvt.title.replace(/^Dinner · /,'').replace(/ ★$/,'').trim();
+      html+=`<div class="srow ok"><span class="srow-d">${label} · ${name}</span><span class="srow-s">${day.sunset}</span><span class="srow-t">${dinnerTime} ✓</span></div>`;
+    } else {
+      html+=`<div class="srow"><span class="srow-d">${label}</span><span class="srow-s">${day.sunset}</span><span class="srow-t">${suggested}</span></div>`;
+    }
+  });
+  html+='<p class="sun-note">Forio faces west — Soccorso church terrace is 5 min from hotel. In Naples: Posillipo &amp; Lungomare face the Gulf of Naples.</p>';
+  body.innerHTML=html;
+}
+
 function toggleEvt(di,ei){
   const exp=document.getElementById(`exp-${di}-${ei}`);
   if(!exp) return;
@@ -1108,6 +1126,7 @@ function toggleEvt(di,ei){
     }
   }catch(e){/* static data renders fine without remote reservations */}
   buildTimeline();
+  buildSunsetTable();
   loadTodos();
 })();
 
