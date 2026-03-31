@@ -960,7 +960,7 @@ const days=[
      sub:'Beach, thermals, or explore — dinner confirmed at Pietratorcia',detail:'A free day to fill as you like — beach, thermal baths, explore Forio, or just rest',
      exp:{info:[['Sunset','20:39 — latest of the whole trip'],['Thermal option','Poseidon Gardens or Negombo for a spa day'],['Beach','Spiaggia di Citara is walking distance from Hotel Umberto a Mare']],
        links:[['↗ Poseidon Gardens','https://www.giardiniposseidon.it/en/',''],['↗ Negombo','https://www.negombo.it/en/','']]}},
-    {cls:'confirmed',icon:'🍷',icn:'idinner',title:'Dinner · Ristorante Pietratorcia',who:'both',
+    {cls:'confirmed dinner-res',icon:'🍷',icn:'idinner',title:'Dinner · Ristorante Pietratorcia',who:'both',
      sub:'19:45 · Via Provinciale Panza 401 · à la carte · confirmed via WhatsApp',detail:'Vineyard restaurant in the Cuotto hills above Forio · traditional Ischian cuisine · own wine production · coniglio all\'ischitana, fresh pasta, house Biancolella',
      exp:{info:[['Date','Thursday 2 July · 19:45'],['Guests','2'],['Menu','À la carte — no need to decide in advance'],['Confirmed','Vito Verde via WhatsApp'],['Location','Cuotto hills above Forio · 10 min by taxi'],['Note','Open lunch & dinner · closed Mondays']],
        links:[['↗ ristorantepietratorcia.it','https://www.ristorantepietratorcia.it',''],['📞 +39 338 349 7196','tel:+393383497196','d']]}},
@@ -1072,7 +1072,7 @@ function buildSunsetTable(){
   days.forEach(day=>{
     if(!day.sunset)return;
     // Find confirmed dinner event (cls contains dinner-res)
-    const dinnerEvt=day.events.find(e=>e.cls&&e.cls.includes('dinner-res'));
+    const dinnerEvt=day.events.find(e=>(e.cls&&e.cls.includes('dinner-res'))||(e.title&&e.title.startsWith('Dinner')));
     const timeMatch=dinnerEvt?(dinnerEvt.sub||'').match(/(\d{2}:\d{2})/):null;
     const dinnerTime=timeMatch?timeMatch[1]:null;
     // Build short date label e.g. "27 Jun"
