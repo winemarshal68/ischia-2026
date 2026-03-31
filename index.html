@@ -1118,6 +1118,9 @@ function toggleEvt(di,ei){
             if(evt.icn==='ihotel'){
               day.events=day.events.filter(e=>e.icn!=='ihotel');
             }
+            // Skip email-added dinners if the day already has a hardcoded confirmed dinner
+            const hasDinner=day.events.some(e=>e.cls&&e.cls.includes('dinner-res'));
+            if(hasDinner&&evt.icn==='idinner') return;
             evt.cls=(evt.cls||'')+' ai-added';
             day.events.push(evt);
           }
