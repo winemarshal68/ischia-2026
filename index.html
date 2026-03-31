@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ischia 2026 — Marshal & Heidi</title>
+<link rel="icon" type="image/x-icon" href="./favicon.ico">
+<link rel="icon" type="image/png" sizes="192x192" href="./favicon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -272,7 +275,7 @@ footer span{color:var(--sunset);}
   <div class="stat"><div class="stat-num">3</div><div class="stat-label">In Naples</div></div>
   <div class="stat"><div class="stat-num">8</div><div class="stat-label">Flights</div></div>
   <div class="stat"><div class="stat-num">2</div><div class="stat-label">Ferries booked</div></div>
-  <div class="stat"><div class="stat-num">2★</div><div class="stat-label">Dinners booked</div></div>
+  <div class="stat"><div class="stat-num">3★</div><div class="stat-label">Dinners booked</div></div>
   <div class="stat"><div class="stat-num">19:45</div><div class="stat-label">Dinner time</div></div>
 </div>
 
@@ -324,10 +327,13 @@ The calendar auto-updates — when either of us emails a reservation to <b>trip@
     <div class="scard-body">
       <div class="todo-item" onclick="toggleTodo(this)"><div class="tbox done"></div><div class="done-text">Naples hotel · 25–27 June — Palazzo Pandola - Luxury Suites</div></div>
       <div class="todo-item" onclick="toggleTodo(this)"><div class="tbox done"></div><div class="done-text">Ferry Naples → Forio, 27 June — Alilauro 1200TJLFM</div></div>
-      <div class="todo-item" onclick="toggleTodo(this)"><div class="tbox"></div><div>Dinner · 27 June (arrive Ischia)</div></div>
+      <div class="todo-item" onclick="toggleTodo(this)"><div class="tbox"></div><div>Dinner · 27 June (arrive Ischia) — Umberto a Mare req. sent</div></div>
       <div class="todo-item" onclick="toggleTodo(this)"><div class="tbox"></div><div>Dinner · 28 June (after boat tour)</div></div>
       <div class="todo-item" onclick="toggleTodo(this)"><div class="tbox"></div><div>Dinner · 29 June</div></div>
-      <div class="todo-item" onclick="toggleTodo(this)"><div class="tbox"></div><div>Dinners · 2, 3 July (lunch 1 July ✓ Da Ciccio)</div></div>
+      <div class="todo-item" onclick="toggleTodo(this)"><div class="tbox done"></div><div class="done-text">Dinner · 30 June — Saturnino ✓</div></div>
+      <div class="todo-item" onclick="toggleTodo(this)"><div class="tbox"></div><div>Dinner · 1 July (lunch ✓ Da Ciccio)</div></div>
+      <div class="todo-item" onclick="toggleTodo(this)"><div class="tbox done"></div><div class="done-text">Dinner · 2 July — Pietratorcia 19:45 ✓</div></div>
+      <div class="todo-item" onclick="toggleTodo(this)"><div class="tbox"></div><div>Dinner · 3 July</div></div>
       <div class="todo-item" onclick="toggleTodo(this)"><div class="tbox done"></div><div class="done-text">Ferry Forio → Naples, 4 July — Alilauro 1200TJLFM</div></div>
       <div class="todo-item" onclick="toggleTodo(this)"><div class="tbox done"></div><div class="done-text">Naples hotel · 4–5 July — Palazzo Pandola - Luxury Suites</div></div>
       <div class="todo-item" onclick="toggleTodo(this)"><div class="tbox done"></div><div class="done-text">Hotel Umberto a Mare · 7 nights</div></div>
@@ -724,10 +730,30 @@ function showPage(id,btn){
   btn.classList.add('active');
 }
 
+function saveTodos(){
+  const items=document.querySelectorAll('.todo-item');
+  const state=[...items].map(el=>el.querySelector('.tbox').classList.contains('done'));
+  try{localStorage.setItem('todos_v1',JSON.stringify(state));}catch(e){}
+}
+function loadTodos(){
+  try{
+    const state=JSON.parse(localStorage.getItem('todos_v1')||'null');
+    if(!state)return;
+    const items=document.querySelectorAll('.todo-item');
+    items.forEach((el,i)=>{
+      if(state[i]===undefined)return;
+      const box=el.querySelector('.tbox');
+      const txt=el.querySelector('div:last-child');
+      if(state[i]){box.classList.add('done');txt.classList.add('done-text');}
+      else{box.classList.remove('done');txt.classList.remove('done-text');}
+    });
+  }catch(e){}
+}
 function toggleTodo(el){
   el.querySelector('.tbox').classList.toggle('done');
   const t=el.querySelector('div:last-child');
   t.classList.toggle('done-text');
+  saveTodos();
 }
 
 const days=[
@@ -986,6 +1012,7 @@ function toggleEvt(di,ei){
     }
   }catch(e){/* static data renders fine without remote reservations */}
   buildTimeline();
+  loadTodos();
 })();
 
 // ── PIN LOCK ────────────────────────────────────────────
