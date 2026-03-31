@@ -319,6 +319,7 @@ The calendar auto-updates — when either of us emails a reservation to <b>trip@
       <div class="brow"><div><div class="brow-label">Lufthansa · Heidi<br>YUL–MUC–NAP & return</div><a class="brow-link" href="https://www.lufthansa.com/gb/en/my-bookings" target="_blank">↗ Manage</a></div><span class="badge bg">7OTLBS</span></div>
       <div class="brow"><div><div class="brow-label">West Coast srl · Boat tour · 28 Jun</div><a class="brow-link" href="https://www.westcoastischia.it/en/" target="_blank">↗ westcoastischia.it</a></div><span class="badge bt">#340669093</span></div>
       <div class="brow"><div><div class="brow-label">Ristorante Saturnino · 30 Jun 19:30</div><a class="brow-link" href="https://www.ristorantesaturnino.it/en/" target="_blank">↗ ristorantesaturnino.it</a></div><span class="badge bok">Confirmed</span></div>
+      <div class="brow"><div><div class="brow-label">Ristorante Umberto a Mare · 27 Jun 19:45<br>Table on terrace · confirmed by Marco Regine</div><a class="brow-link" href="https://www.umbertoamare.it/en/" target="_blank">↗ umbertoamare.it</a></div><span class="badge bok">Confirmed</span></div>
     </div>
   </div>
 
@@ -327,7 +328,7 @@ The calendar auto-updates — when either of us emails a reservation to <b>trip@
     <div class="scard-body">
       <div class="todo-item" onclick="toggleTodo(this)"><div class="tbox done"></div><div class="done-text">Naples hotel · 25–27 June — Palazzo Pandola - Luxury Suites</div></div>
       <div class="todo-item" onclick="toggleTodo(this)"><div class="tbox done"></div><div class="done-text">Ferry Naples → Forio, 27 June — Alilauro 1200TJLFM</div></div>
-      <div class="todo-item" onclick="toggleTodo(this)"><div class="tbox"></div><div>Dinner · 27 June (arrive Ischia) — Umberto a Mare req. sent</div></div>
+      <div class="todo-item" onclick="toggleTodo(this)"><div class="tbox done"></div><div class="done-text">Dinner · 27 June — Umberto a Mare 19:45 ✓ (terrace booked)</div></div>
       <div class="todo-item" onclick="toggleTodo(this)"><div class="tbox"></div><div>Dinner · 28 June (after boat tour)</div></div>
       <div class="todo-item" onclick="toggleTodo(this)"><div class="tbox"></div><div>Dinner · 29 June</div></div>
       <div class="todo-item" onclick="toggleTodo(this)"><div class="tbox done"></div><div class="done-text">Dinner · 30 June — Saturnino ✓</div></div>
@@ -415,14 +416,15 @@ The calendar auto-updates — when either of us emails a reservation to <b>trip@
   </div></div></div>
 
   <div class="res-card"><div class="res-card-head"><div class="res-cat">Restaurant · Forio, Ischia</div><div class="res-name">Ristorante Umberto a Mare</div></div>
-  <div class="res-card-body"><div class="rs rs-tbd">To book — any evening on Ischia</div>
+  <div class="res-card-body"><div class="rs rs-ok">✓ Confirmed · 27 Jun 19:45 · Terrace · 2 persons</div>
+  <div class="dr"><span class="dk2">Confirmed by</span><span>Marco Regine · "vi confermo prenotazione tavolo in terrazza"</span></div>
   <div class="dr"><span class="dk2">Location</span><span>Adjacent to the hotel · directly on the sea</span></div>
   <div class="dr"><span class="dk2">Guide</span><span class="mstar">★ Michelin Star (awarded Nov 2025)</span></div>
   <div class="dr"><span class="dk2">Wine</span><span>1,000+ label cellar · Ischian specialties</span></div>
-  <div class="dr"><span class="dk2">Book for</span><span>19:45 for sunset views from the terrace</span></div>
   <div class="res-links">
     <a href="https://www.umbertoamare.it/en/" target="_blank" class="res-link">↗ umbertoamare.it</a>
     <a href="tel:+39081997171" class="res-link dk">📞 +39 081 997171</a>
+    <a href="mailto:umbertoamare@gmail.com" class="res-link dk">✉ umbertoamare@gmail.com</a>
   </div></div></div>
 
   <div class="res-card"><div class="res-card-head"><div class="res-cat">Hotel · Naples — 25–27 Jun</div><div class="res-name">Palazzo Pandola - Luxury Suites</div></div>
@@ -804,7 +806,12 @@ const days=[
      sub:'Via Soccorso 2, Forio · <span class="badge bp">Conf. 5783.030.187</span>',
      detail:'13:00–17:00 · 7 nights · Breakfast incl. · PIN 3312 · +39 081 997171',
      exp:{info:[['Room','Superior Double Sea View · Non-smoking'],['Meals','Breakfast on sea terrace'],['On-site','★ Michelin Ristorante Umberto a Mare'],['Beach','Private sea access']],
-       links:[['↗ umbertoamare.it','https://www.umbertoamare.it/en/',''],['↗ Google Maps','https://maps.google.com/?q=Hotel+Umberto+a+Mare+Forio+Ischia',''],['📞 +39 081 997171','tel:+39081997171','d']]}}
+       links:[['↗ umbertoamare.it','https://www.umbertoamare.it/en/',''],['↗ Google Maps','https://maps.google.com/?q=Hotel+Umberto+a+Mare+Forio+Ischia',''],['📞 +39 081 997171','tel:+39081997171','d']]}},
+    {cls:'dinner-res',icon:'🍽',icn:'idinner',title:'Dinner · Ristorante Umberto a Mare ★',who:'both',
+     sub:'19:45 · Terrace table · <span class="badge bok">Confirmed — Marco Regine</span>',
+     detail:'Table on the terrace · arrival night dinner · ★ Michelin Star (Nov 2025)',
+     exp:{info:[['Date','Saturday 27 June · 19:45'],['Guests','2'],['Confirmed','Marco Regine via email: "vi confermo prenotazione tavolo in terrazza"'],['Location','On-site at Hotel Umberto a Mare · directly on the sea'],['Guide','★ Michelin Star awarded Nov 2025'],['Wine','1,000+ label cellar']],
+       links:[['↗ umbertoamare.it','https://www.umbertoamare.it/en/',''],['📞 +39 081 997171','tel:+39081997171','d'],['✉ umbertoamare@gmail.com','mailto:umbertoamare@gmail.com','d']]}}
   ]},
   {date:'Sun 28 June',name:'Boat tour',sunset:'20:31',events:[
     {cls:'hl confirmed',icon:'⛵',icn:'iboat',title:'Private boat tour · Ischia & Procida',who:'both',
