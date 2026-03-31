@@ -1073,7 +1073,7 @@ function buildSunsetTable(){
     if(!day.sunset)return;
     // Find confirmed dinner event (cls contains dinner-res)
     const dinnerEvt=day.events.find(e=>(e.cls&&e.cls.includes('dinner-res'))||(e.title&&e.title.startsWith('Dinner')));
-    const timeMatch=dinnerEvt?(dinnerEvt.sub||'').match(/(\d{2}:\d{2})/):null;
+    const timeMatch=dinnerEvt?((dinnerEvt.sub||'')+(dinnerEvt.detail||'')).match(/(\d{2}:\d{2})/):null;
     const dinnerTime=timeMatch?timeMatch[1]:null;
     // Build short date label e.g. "27 Jun"
     const shortDate=day.date
