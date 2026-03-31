@@ -135,12 +135,15 @@ function corsHeaders(origin: string | null): Record<string, string> {
   return headers;
 }
 
-const PIN_HASH = '964605676364239f38e267627ad8d326f12704456bae111c8da3848eca4622ee';
+const PIN_HASHES = [
+  '964605676364239f38e267627ad8d326f12704456bae111c8da3848eca4622ee', // main pin
+  'e7042ac7d09c7bc41c8cfa5749e41858f6980643bc0db1a83cc793d3e24d3f77', // demo pin: 00000 (temporary)
+];
 
 async function verifyPin(pin: string): Promise<boolean> {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pin));
   const hash = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
-  return hash === PIN_HASH;
+  return PIN_HASHES.includes(hash);
 }
 
 interface CalendarEvent {

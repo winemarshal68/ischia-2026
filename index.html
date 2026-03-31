@@ -1017,7 +1017,7 @@ function toggleEvt(di,ei){
 
 // ── PIN LOCK ────────────────────────────────────────────
 (function(){
-  const HASH='964605676364239f38e267627ad8d326f12704456bae111c8da3848eca4622ee';
+  const HASHES=['964605676364239f38e267627ad8d326f12704456bae111c8da3848eca4622ee','e7042ac7d09c7bc41c8cfa5749e41858f6980643bc0db1a83cc793d3e24d3f77'/* demo: 00000 */];
   const LS_KEY='ischia_unlocked';
   const EXPIRY_MS=60*60*1000; // 1 hour
   const MAX_ATTEMPTS=3;
@@ -1110,7 +1110,7 @@ function toggleEvt(di,ei){
       verifying=true;
       const h=await sha256(input);
       verifying=false;
-      if(h===HASH){
+      if(HASHES.includes(h)){
         unlock();
       } else {
         attempts++;
