@@ -1145,6 +1145,29 @@ function toggleEvt(di,ei){
 // ── PDF GENERATION ──────────────────────────────────────
 function stripHTML(s){return (s||'').replace(/<[^>]*>/g,'').replace(/&amp;/g,'&').replace(/&nbsp;/g,' ').replace(/&#\d+;/g,'').trim();}
 
+// jsPDF built-in Helvetica only supports WinAnsi — aggressively replace all Unicode
+function pdfSafe(s){
+  return stripHTML(s)
+    .replace(/[\u2018\u2019\u201A\u0060]/g,"'")   // smart single quotes
+    .replace(/[\u201C\u201D\u201E]/g,'"')           // smart double quotes
+    .replace(/\u2026/g,'...')                        // ellipsis
+    .replace(/[\u2013\u2012]/g,'-')                  // en dash
+    .replace(/[\u2014\u2015]/g,' - ')                // em dash
+    .replace(/\u00B7/g,'-')                          // middle dot
+    .replace(/[\u2022\u00B0]/g,'-')                  // bullet, degree
+    .replace(/\u20AC/g,'EUR ')                       // euro sign
+    .replace(/\u2600/g,'')                           // sun symbol
+    .replace(/[\u2193\u2191\u2192\u2190]/g,'>')      // arrows
+    .replace(/\u2009/g,' ')                          // thin space
+    .replace(/[\u00D7]/g,'x')                        // multiplication
+    .replace(/[\u2605\u2606]/g,'*')                  // stars
+    .replace(/\u00A0/g,' ')                          // nbsp
+    .replace(/\u2714|\u2713/g,'[ok]')                // checkmarks
+    .replace(/[\u00AB\u00BB]/g,'"')                  // guillemets
+    .replace(/\xB7/g,'-')                            // middle dot (latin1)
+    .replace(/[^\x20-\x7E\xA1-\xFF]/g,'');          // strip anything else outside Latin-1
+}
+
 function pdfColors(){
   return {
     night:[13,31,45], sea:[26,77,110], seaMid:[42,109,158], seaLight:[74,159,200],
@@ -1154,42 +1177,30 @@ function pdfColors(){
 }
 
 function pdfDrawCover(doc,c){
-  // Full-page night background
-  doc.setFillColor(...c.night);
-  doc.rect(0,0,210,297,'F');
-  // Accent bands
-  doc.setFillColor(22,48,68);
-  doc.rect(0,230,210,67,'F');
-  doc.setFillColor(18,40,58);
-  doc.rect(0,260,210,37,'F');
-  // Eyebrow
+  doc.setFillColor(...c.night);doc.rect(0,0,210,297,'F');
+  doc.setFillColor(22,48,68);doc.rect(0,230,210,67,'F');
+  doc.setFillColor(18,40,58);doc.rect(0,260,210,37,'F');
   doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(...c.seaLight);
-  doc.text('TRIP ITINERARY \u00B7 SUMMER 2026',20,50);
-  // Title
+  doc.text('TRIP ITINERARY - SUMMER 2026',20,50);
   doc.setFont('helvetica','bold');doc.setFontSize(52);doc.setTextColor(...c.white);
   doc.text('Ischia',20,80);
   doc.setFont('helvetica','bolditalic');doc.setFontSize(52);doc.setTextColor(...c.sunset);
   doc.text('a Mare',20,100);
-  // Dates
   doc.setFont('helvetica','normal');doc.setFontSize(11);doc.setTextColor(200,232,245);
-  doc.text('25 June \u2013 5 July 2026  \u00B7  Naples & Forio d\'Ischia, Italy',20,118);
-  // Travelers
+  doc.text('25 June - 5 July 2026  /  Naples & Forio d\'Ischia, Italy',20,118);
   doc.setFontSize(10);doc.setTextColor(...c.seaLight);
-  doc.text('Marshal Walker \u00B7 Granada',20,140);
-  doc.text('Heidi Melbostad \u00B7 Montreal',20,150);
-  // Stats box
+  doc.text('Marshal Walker - Granada',20,140);
+  doc.text('Heidi Melbostad - Montreal',20,150);
   var bx=20,by=175;
   doc.setFillColor(26,77,110);doc.roundedRect(bx,by,170,40,4,4,'F');
-  doc.setFont('helvetica','bold');doc.setFontSize(18);doc.setTextColor(...c.white);
-  var stats=[['7','Ischia'],['3','Naples'],['2','Ferries'],['10','Nights']];
+  doc.setFont('helvetica','bold');
+  var stats=[['7','ISCHIA'],['3','NAPLES'],['2','FERRIES'],['10','NIGHTS']];
   stats.forEach(function(s,i){
     var sx=bx+10+i*42;
-    doc.setFontSize(20);doc.text(s[0],sx,by+17);
-    doc.setFontSize(7);doc.setTextColor(200,232,245);doc.text(s[1].toUpperCase(),sx,by+27);
-    doc.setTextColor(...c.white);
+    doc.setFontSize(20);doc.setTextColor(...c.white);doc.text(s[0],sx,by+17);
+    doc.setFontSize(7);doc.setTextColor(200,232,245);doc.text(s[1],sx,by+27);
   });
-  // Footer
-  doc.setFontSize(8);doc.setTextColor(...c.muted);
+  doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...c.muted);
   doc.text('pedalonpedaloff.com',20,285);
 }
 
@@ -1197,10 +1208,10 @@ function pdfDrawDayHeader(doc,day,y,c){
   doc.setFillColor(...c.sea);
   doc.roundedRect(15,y,180,12,2,2,'F');
   doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(...c.white);
-  doc.text(day.date+' \u2014 '+day.name,20,y+8.5);
+  doc.text(pdfSafe(day.date+' - '+day.name),20,y+8.5);
   if(day.sunset){
     doc.setFont('helvetica','normal');doc.setFontSize(8);
-    doc.text('\u2600 Sunset '+day.sunset,165,y+8.5);
+    doc.text('Sunset '+day.sunset,160,y+8.5);
   }
   return y+18;
 }
@@ -1208,11 +1219,10 @@ function pdfDrawDayHeader(doc,day,y,c){
 function pdfDrawEvent(doc,evt,y,c,pageW){
   if(evt.cls==='connector'){
     doc.setFont('helvetica','italic');doc.setFontSize(8);doc.setTextColor(...c.muted);
-    doc.text('\u2193 '+stripHTML(evt.label),25,y+4);
+    doc.text('> '+pdfSafe(evt.label),25,y+4);
     return y+8;
   }
-  var maxW=pageW-40;
-  // Icon circle
+  var contentW=pageW-45; // usable width for text (right margin 15)
   var isConfirmed=(evt.cls||'').includes('confirmed');
   var isDinner=(evt.cls||'').includes('dinner');
   var isTbd=(evt.cls||'').includes('tbd');
@@ -1223,37 +1233,42 @@ function pdfDrawEvent(doc,evt,y,c,pageW){
   doc.circle(22,y+4,3,'F');
   // Title
   doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(...c.text);
-  var title=stripHTML(evt.title);
+  var title=pdfSafe(evt.title);
   var whoLabel=evt.who==='m'?' [Marshal]':evt.who==='h'?' [Heidi]':evt.who==='both'?' [Both]':'';
-  doc.text(title+whoLabel,28,y+5.5);
-  y+=10;
+  var titleLines=doc.splitTextToSize(title+whoLabel,contentW);
+  doc.text(titleLines,28,y+5.5);
+  y+=titleLines.length*5+2;
   // Sub
   if(evt.sub){
     doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...c.muted);
-    var subLines=doc.splitTextToSize(stripHTML(evt.sub),maxW-10);
+    var subLines=doc.splitTextToSize(pdfSafe(evt.sub),contentW);
     doc.text(subLines,28,y);
-    y+=subLines.length*4;
+    y+=subLines.length*3.5+1;
   }
   // Detail
   if(evt.detail){
     doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...c.text);
-    var detLines=doc.splitTextToSize(stripHTML(evt.detail),maxW-10);
+    var detLines=doc.splitTextToSize(pdfSafe(evt.detail),contentW);
     doc.text(detLines,28,y);
-    y+=detLines.length*4;
+    y+=detLines.length*3.5+1;
   }
   // Key info from expanded section
   if(evt.exp&&evt.exp.info&&evt.exp.info.length>0){
-    doc.setDrawColor(...c.sand);doc.setLineWidth(.3);
-    doc.line(28,y,28+maxW-10,y);
+    doc.setDrawColor(220,215,205);doc.setLineWidth(.3);
+    doc.line(28,y,190,y);
     y+=3;
+    var keyColW=30; // width for the key column
+    var valX=28+keyColW+2; // where values start
+    var valW=contentW-keyColW-2; // remaining width for values
     evt.exp.info.forEach(function(pair){
-      if(y>272) return; // leave room for footer
+      if(y>272) return;
       doc.setFont('helvetica','bold');doc.setFontSize(7);doc.setTextColor(...c.muted);
-      doc.text(pair[0].toUpperCase(),28,y+3);
+      doc.text(pdfSafe(pair[0]).toUpperCase().substring(0,18),28,y+3);
       doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(...c.text);
-      var valLines=doc.splitTextToSize(stripHTML(pair[1]),maxW-45);
-      doc.text(valLines,60,y+3);
-      y+=Math.max(valLines.length*3.5,5);
+      var valText=pdfSafe(pair[1]);
+      var valLines=doc.splitTextToSize(valText,valW);
+      doc.text(valLines,valX,y+3);
+      y+=Math.max(valLines.length*3.2, 4.5);
     });
   }
   return y+4;
@@ -1261,7 +1276,7 @@ function pdfDrawEvent(doc,evt,y,c,pageW){
 
 function pdfFooter(doc,c,pageNum){
   doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...c.muted);
-  doc.text('Ischia 2026 \u00B7 Marshal & Heidi \u00B7 pedalonpedaloff.com',15,290);
+  doc.text('Ischia 2026 - Marshal & Heidi - pedalonpedaloff.com',15,290);
   doc.text('Page '+pageNum,190,290);
 }
 
@@ -1270,17 +1285,13 @@ function generateTripPDF(){
   var doc=new jsPDF({unit:'mm',format:'a4'});
   var c=pdfColors();
   var pageNum=1;
-  // Cover page
   pdfDrawCover(doc,c);
-  // Day pages
   days.forEach(function(day){
-    doc.addPage();
-    pageNum++;
+    doc.addPage();pageNum++;
     var y=20;
     y=pdfDrawDayHeader(doc,day,y,c);
     day.events.forEach(function(evt){
-      // Check if we need a new page
-      if(y>260){
+      if(y>255){
         pdfFooter(doc,c,pageNum);
         doc.addPage();pageNum++;y=20;
         y=pdfDrawDayHeader(doc,day,y,c);
@@ -1298,27 +1309,27 @@ function generateDayPDF(di){
   var jsPDF=window.jspdf.jsPDF;
   var doc=new jsPDF({unit:'mm',format:'a4'});
   var c=pdfColors();
-  // Mini header
   doc.setFillColor(...c.night);doc.rect(0,0,210,38,'F');
   doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...c.seaLight);
-  doc.text('ISCHIA 2026 \u00B7 DAILY ITINERARY',15,14);
+  doc.text('ISCHIA 2026 - DAILY ITINERARY',15,14);
   doc.setFont('helvetica','bold');doc.setFontSize(22);doc.setTextColor(...c.white);
-  doc.text(day.date,15,28);
+  doc.text(pdfSafe(day.date),15,28);
   doc.setFont('helvetica','normal');doc.setFontSize(12);doc.setTextColor(...c.sunset);
-  doc.text(day.name,15,35);
+  doc.text(pdfSafe(day.name),15,35);
   if(day.sunset){
     doc.setFontSize(9);doc.setTextColor(...c.seaLight);
-    doc.text('\u2600 Sunset '+day.sunset,160,28);
+    doc.text('Sunset '+day.sunset,160,28);
   }
   var y=48;
+  var pageNum=1;
   day.events.forEach(function(evt){
-    if(y>265){
-      pdfFooter(doc,c,1);
-      doc.addPage();y=20;
+    if(y>260){
+      pdfFooter(doc,c,pageNum);
+      doc.addPage();pageNum++;y=20;
     }
     y=pdfDrawEvent(doc,evt,y,c,210);
   });
-  pdfFooter(doc,c,1);
+  pdfFooter(doc,c,pageNum);
   var safeName=day.date.replace(/\s+/g,'_');
   doc.save('Ischia_'+safeName+'.pdf');
 }
