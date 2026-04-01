@@ -215,6 +215,11 @@ footer span{color:var(--sunset);}
 .cal-tooltip code{font-size:9px;background:rgba(74,159,200,.15);padding:2px 5px;border-radius:3px;word-break:break-all;}
 .cal-help.show .cal-tooltip{display:block;}
 @media(max-width:700px){.cal-tooltip{width:280px;left:auto;right:0;transform:none;}}
+/* PDF download buttons */
+.pdf-trip-btn{display:inline-flex;align-items:center;gap:6px;font-size:11px;letter-spacing:.05em;color:var(--foam);background:rgba(232,144,74,.2);border:1px solid rgba(232,144,74,.4);border-radius:6px;padding:6px 14px;text-decoration:none;cursor:pointer;transition:background .2s;font-family:'DM Mono',monospace;}
+.pdf-trip-btn:hover{background:rgba(232,144,74,.35);}
+.day-pdf{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:5px;background:rgba(26,77,110,.06);border:1px solid var(--border);cursor:pointer;transition:all .18s;font-size:11px;color:var(--muted);flex-shrink:0;}
+.day-pdf:hover{background:rgba(26,77,110,.12);border-color:rgba(26,77,110,.3);color:var(--sea);}
 .event.ai-added{border-left:2px dashed var(--sea-light);margin-left:-2px;}
 .event.ai-added .event-title::after{content:'email-added';font-size:9px;color:var(--muted);background:var(--foam);padding:1px 6px;border-radius:3px;margin-left:8px;letter-spacing:.04em;vertical-align:middle;}
 </style>
@@ -281,6 +286,7 @@ footer span{color:var(--sunset);}
 
 <div class="cal-bar">
   <a href="https://ischia-email-worker.still-tooth-533d.workers.dev/calendar.ics" class="cal-btn">📅 Add to Calendar</a>
+  <span class="pdf-trip-btn" onclick="generateTripPDF()">📄 Download Trip PDF</span>
   <span class="cal-help" onclick="event.stopPropagation();this.classList.toggle('show')">?<span class="cal-tooltip">
 <b>Subscribe for auto-updates</b><br><br>
 <b>Google Calendar:</b> Settings → Add calendar → From URL → paste:<br>
@@ -800,6 +806,7 @@ The calendar auto-updates — when either of us emails a reservation to <b>trip@
 
 <footer><p>Ischia 2026 &nbsp;·&nbsp; <span>Marshal & Heidi</span></p></footer>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 function showPage(id,btn){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -1024,6 +1031,7 @@ function buildTimeline(){
       <div class="day-date">${day.date}</div>
       <div class="day-name-lbl">${day.name}</div>
       ${sunset}
+      <span class="day-pdf" onclick="event.stopPropagation();generateDayPDF(${di})" title="Download this day as PDF">⤓</span>
       <span class="day-toggle open" id="tog-${di}">▾</span>
     </div>
     <div class="events" id="evts-${di}">${renderEvts(day.events,di)}</div>
@@ -1133,6 +1141,188 @@ function toggleEvt(di,ei){
   buildSunsetTable();
   loadTodos();
 })();
+
+// ── PDF GENERATION ──────────────────────────────────────
+function stripHTML(s){return (s||'').replace(/<[^>]*>/g,'').replace(/&amp;/g,'&').replace(/&nbsp;/g,' ').replace(/&#\d+;/g,'').trim();}
+
+function pdfColors(){
+  return {
+    night:[13,31,45], sea:[26,77,110], seaMid:[42,109,158], seaLight:[74,159,200],
+    dusk:[200,112,58], sunset:[232,144,74], sand:[245,239,230], white:[250,249,247],
+    text:[28,43,56], muted:[107,132,153], green:[31,122,74], both:[106,58,122]
+  };
+}
+
+function pdfDrawCover(doc,c){
+  // Full-page night background
+  doc.setFillColor(...c.night);
+  doc.rect(0,0,210,297,'F');
+  // Gradient-ish circles
+  doc.setFillColor(42,109,158);doc.setGState(new doc.GState({opacity:.15}));
+  doc.circle(160,240,90,'F');
+  doc.setFillColor(200,112,58);doc.setGState(new doc.GState({opacity:.12}));
+  doc.circle(30,260,60,'F');
+  doc.setGState(new doc.GState({opacity:1}));
+  // Eyebrow
+  doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(...c.seaLight);
+  doc.text('TRIP ITINERARY \u00B7 SUMMER 2026',20,50);
+  // Title
+  doc.setFont('helvetica','bold');doc.setFontSize(52);doc.setTextColor(...c.white);
+  doc.text('Ischia',20,80);
+  doc.setFont('helvetica','bolditalic');doc.setFontSize(52);doc.setTextColor(...c.sunset);
+  doc.text('a Mare',20,100);
+  // Dates
+  doc.setFont('helvetica','normal');doc.setFontSize(11);doc.setTextColor(200,232,245);
+  doc.text('25 June \u2013 5 July 2026  \u00B7  Naples & Forio d\'Ischia, Italy',20,118);
+  // Travelers
+  doc.setFontSize(10);doc.setTextColor(...c.seaLight);
+  doc.text('Marshal Walker \u00B7 Granada',20,140);
+  doc.text('Heidi Melbostad \u00B7 Montreal',20,150);
+  // Stats box
+  var bx=20,by=175;
+  doc.setFillColor(26,77,110);doc.roundedRect(bx,by,170,40,4,4,'F');
+  doc.setFont('helvetica','bold');doc.setFontSize(18);doc.setTextColor(...c.white);
+  var stats=[['7','Ischia'],['3','Naples'],['2','Ferries'],['10','Nights']];
+  stats.forEach(function(s,i){
+    var sx=bx+10+i*42;
+    doc.setFontSize(20);doc.text(s[0],sx,by+17);
+    doc.setFontSize(7);doc.setTextColor(200,232,245);doc.text(s[1].toUpperCase(),sx,by+27);
+    doc.setTextColor(...c.white);
+  });
+  // Footer
+  doc.setFontSize(8);doc.setTextColor(...c.muted);
+  doc.text('pedalonpedaloff.com',20,285);
+}
+
+function pdfDrawDayHeader(doc,day,y,c){
+  doc.setFillColor(...c.sea);
+  doc.roundedRect(15,y,180,12,2,2,'F');
+  doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(...c.white);
+  doc.text(day.date+' \u2014 '+day.name,20,y+8.5);
+  if(day.sunset){
+    doc.setFont('helvetica','normal');doc.setFontSize(8);
+    doc.text('\u2600 Sunset '+day.sunset,165,y+8.5);
+  }
+  return y+18;
+}
+
+function pdfDrawEvent(doc,evt,y,c,pageW){
+  if(evt.cls==='connector'){
+    doc.setFont('helvetica','italic');doc.setFontSize(8);doc.setTextColor(...c.muted);
+    doc.text('\u2193 '+stripHTML(evt.label),25,y+4);
+    return y+8;
+  }
+  var maxW=pageW-40;
+  // Icon circle
+  var isConfirmed=(evt.cls||'').includes('confirmed');
+  var isDinner=(evt.cls||'').includes('dinner');
+  var isTbd=(evt.cls||'').includes('tbd');
+  if(isDinner){doc.setFillColor(...c.dusk);}
+  else if(isConfirmed){doc.setFillColor(...c.sea);}
+  else if(isTbd){doc.setFillColor(...c.sunset);}
+  else{doc.setFillColor(...c.muted);}
+  doc.circle(22,y+4,3,'F');
+  // Title
+  doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(...c.text);
+  var title=stripHTML(evt.title);
+  var whoLabel=evt.who==='m'?' [Marshal]':evt.who==='h'?' [Heidi]':evt.who==='both'?' [Both]':'';
+  doc.text(title+whoLabel,28,y+5.5);
+  y+=10;
+  // Sub
+  if(evt.sub){
+    doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...c.muted);
+    var subLines=doc.splitTextToSize(stripHTML(evt.sub),maxW-10);
+    doc.text(subLines,28,y);
+    y+=subLines.length*4;
+  }
+  // Detail
+  if(evt.detail){
+    doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...c.text);
+    var detLines=doc.splitTextToSize(stripHTML(evt.detail),maxW-10);
+    doc.text(detLines,28,y);
+    y+=detLines.length*4;
+  }
+  // Key info from expanded section
+  if(evt.exp&&evt.exp.info&&evt.exp.info.length>0){
+    doc.setDrawColor(...c.sand);doc.setLineWidth(.3);
+    doc.line(28,y,28+maxW-10,y);
+    y+=3;
+    evt.exp.info.forEach(function(pair){
+      if(y>272) return; // leave room for footer
+      doc.setFont('helvetica','bold');doc.setFontSize(7);doc.setTextColor(...c.muted);
+      doc.text(pair[0].toUpperCase(),28,y+3);
+      doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(...c.text);
+      var valLines=doc.splitTextToSize(stripHTML(pair[1]),maxW-45);
+      doc.text(valLines,60,y+3);
+      y+=Math.max(valLines.length*3.5,5);
+    });
+  }
+  return y+4;
+}
+
+function pdfFooter(doc,c,pageNum){
+  doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...c.muted);
+  doc.text('Ischia 2026 \u00B7 Marshal & Heidi \u00B7 pedalonpedaloff.com',15,290);
+  doc.text('Page '+pageNum,190,290);
+}
+
+function generateTripPDF(){
+  var jsPDF=window.jspdf.jsPDF;
+  var doc=new jsPDF({unit:'mm',format:'a4'});
+  var c=pdfColors();
+  var pageNum=1;
+  // Cover page
+  pdfDrawCover(doc,c);
+  // Day pages
+  days.forEach(function(day){
+    doc.addPage();
+    pageNum++;
+    var y=20;
+    y=pdfDrawDayHeader(doc,day,y,c);
+    day.events.forEach(function(evt){
+      // Check if we need a new page
+      if(y>260){
+        pdfFooter(doc,c,pageNum);
+        doc.addPage();pageNum++;y=20;
+        y=pdfDrawDayHeader(doc,day,y,c);
+      }
+      y=pdfDrawEvent(doc,evt,y,c,210);
+    });
+    pdfFooter(doc,c,pageNum);
+  });
+  doc.save('Ischia_2026_Full_Itinerary.pdf');
+}
+
+function generateDayPDF(di){
+  var day=days[di];
+  if(!day) return;
+  var jsPDF=window.jspdf.jsPDF;
+  var doc=new jsPDF({unit:'mm',format:'a4'});
+  var c=pdfColors();
+  // Mini header
+  doc.setFillColor(...c.night);doc.rect(0,0,210,38,'F');
+  doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(...c.seaLight);
+  doc.text('ISCHIA 2026 \u00B7 DAILY ITINERARY',15,14);
+  doc.setFont('helvetica','bold');doc.setFontSize(22);doc.setTextColor(...c.white);
+  doc.text(day.date,15,28);
+  doc.setFont('helvetica','normal');doc.setFontSize(12);doc.setTextColor(...c.sunset);
+  doc.text(day.name,15,35);
+  if(day.sunset){
+    doc.setFontSize(9);doc.setTextColor(...c.seaLight);
+    doc.text('\u2600 Sunset '+day.sunset,160,28);
+  }
+  var y=48;
+  day.events.forEach(function(evt){
+    if(y>265){
+      pdfFooter(doc,c,1);
+      doc.addPage();y=20;
+    }
+    y=pdfDrawEvent(doc,evt,y,c,210);
+  });
+  pdfFooter(doc,c,1);
+  var safeName=day.date.replace(/\s+/g,'_');
+  doc.save('Ischia_'+safeName+'.pdf');
+}
 
 // ── PIN LOCK ────────────────────────────────────────────
 (function(){
