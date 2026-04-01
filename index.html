@@ -1157,12 +1157,11 @@ function pdfDrawCover(doc,c){
   // Full-page night background
   doc.setFillColor(...c.night);
   doc.rect(0,0,210,297,'F');
-  // Gradient-ish circles
-  doc.setFillColor(42,109,158);doc.setGState(new doc.GState({opacity:.15}));
-  doc.circle(160,240,90,'F');
-  doc.setFillColor(200,112,58);doc.setGState(new doc.GState({opacity:.12}));
-  doc.circle(30,260,60,'F');
-  doc.setGState(new doc.GState({opacity:1}));
+  // Accent bands
+  doc.setFillColor(22,48,68);
+  doc.rect(0,230,210,67,'F');
+  doc.setFillColor(18,40,58);
+  doc.rect(0,260,210,37,'F');
   // Eyebrow
   doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(...c.seaLight);
   doc.text('TRIP ITINERARY \u00B7 SUMMER 2026',20,50);
