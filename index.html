@@ -286,7 +286,7 @@ footer span{color:var(--sunset);}
 
 <div class="cal-bar">
   <a href="https://ischia-email-worker.still-tooth-533d.workers.dev/calendar.ics" class="cal-btn">📅 Add to Calendar</a>
-  <span class="pdf-trip-btn" onclick="generateTripPDF()">📄 Download Trip PDF</span>
+  <span class="pdf-trip-btn" onclick="generateTripPDF()">📄 Print / Save as PDF</span>
   <span class="cal-help" onclick="event.stopPropagation();this.classList.toggle('show')">?<span class="cal-tooltip">
 <b>Subscribe for auto-updates</b><br><br>
 <b>Google Calendar:</b> Settings → Add calendar → From URL → paste:<br>
@@ -806,7 +806,6 @@ The calendar auto-updates — when either of us emails a reservation to <b>trip@
 
 <footer><p>Ischia 2026 &nbsp;·&nbsp; <span>Marshal & Heidi</span></p></footer>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script>
 function showPage(id,btn){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -1031,7 +1030,7 @@ function buildTimeline(){
       <div class="day-date">${day.date}</div>
       <div class="day-name-lbl">${day.name}</div>
       ${sunset}
-      <span class="day-pdf" onclick="event.stopPropagation();generateDayPDF(${di})" title="Download this day as PDF">⤓</span>
+      <span class="day-pdf" onclick="event.stopPropagation();generateDayPDF(${di})" title="Print / Save this day as PDF">⤓</span>
       <span class="day-toggle open" id="tog-${di}">▾</span>
     </div>
     <div class="events" id="evts-${di}">${renderEvts(day.events,di)}</div>
@@ -1142,135 +1141,94 @@ function toggleEvt(di,ei){
   loadTodos();
 })();
 
-// ── PDF GENERATION (html2pdf.js) ────────────────────────
+// ── PDF GENERATION (print-based) ────────────────────────
 function stripHTML(s){return (s||'').replace(/<[^>]*>/g,'').replace(/&amp;/g,'&').replace(/&nbsp;/g,' ').replace(/&#\d+;/g,'').trim();}
 
-function pdfCSS(){
-  return '<style>'+
-  '@page{margin:0}'+
-  '*{margin:0;padding:0;box-sizing:border-box}'+
-  'body{font-family:Helvetica,Arial,sans-serif;font-size:9px;color:#1c2b38;line-height:1.5}'+
-  '.cover{width:210mm;min-height:297mm;background:#0d1f2d;color:#faf9f7;padding:50px 30px;page-break-after:always;position:relative}'+
-  '.cover-ey{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#4a9fc8;margin-bottom:18px}'+
-  '.cover h1{font-size:52px;font-weight:700;line-height:1;margin-bottom:4px}'+
-  '.cover h1 em{font-style:italic;color:#e8904a;font-weight:700}'+
-  '.cover-dt{font-size:12px;color:rgba(200,232,245,.7);margin-top:16px}'+
-  '.cover-tr{margin-top:28px;font-size:11px;color:#4a9fc8}'+
-  '.cover-tr div{margin-bottom:4px}'+
-  '.sbar{display:flex;gap:0;margin-top:40px;background:#1a4d6e;border-radius:6px;overflow:hidden}'+
-  '.sb{flex:1;padding:14px 16px;text-align:center;border-right:1px solid rgba(255,255,255,.08)}'+
-  '.sb:last-child{border-right:none}'+
-  '.sb-n{font-size:22px;font-weight:700;color:#fff}'+
-  '.sb-l{font-size:7px;letter-spacing:2px;text-transform:uppercase;color:rgba(200,232,245,.6);margin-top:2px}'+
-  '.cover-ft{position:absolute;bottom:30px;left:30px;font-size:8px;color:rgba(200,232,245,.3)}'+
-  '.dp{padding:24px 28px 40px;page-break-before:always;position:relative;min-height:250mm}'+
-  '.dp:first-of-type{page-break-before:auto}'+
-  '.dh{background:#1a4d6e;color:#fff;padding:12px 18px;border-radius:6px;display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}'+
-  '.dh h2{font-size:14px;font-weight:700}'+
-  '.dh .ss{font-size:9px;color:#4a9fc8}'+
-  '.ev{margin-bottom:14px;padding:10px 0 10px 20px;border-left:3px solid #e8ddd0;position:relative}'+
-  '.ev::before{content:"";position:absolute;left:-6px;top:14px;width:9px;height:9px;border-radius:50%;background:#6b8499}'+
-  '.ev.c1::before{background:#1a4d6e}'+
-  '.ev.c2::before{background:#c8703a}'+
-  '.ev.c3::before{background:#e8904a}'+
-  '.ev-t{font-size:11px;font-weight:700;color:#1c2b38;margin-bottom:3px}'+
-  '.ev-w{display:inline-block;font-size:8px;font-weight:600;padding:1px 6px;border-radius:8px;margin-left:4px}'+
-  '.ev-wm{background:rgba(26,77,110,.1);color:#1a4d6e}'+
-  '.ev-wh{background:rgba(42,122,90,.1);color:#2a7a5a}'+
-  '.ev-wb{background:rgba(106,58,122,.1);color:#6a3a7a}'+
-  '.ev-s{font-size:8.5px;color:#6b8499;margin-bottom:2px}'+
-  '.ev-d{font-size:8.5px;color:#1c2b38;margin-bottom:4px}'+
-  '.ev-cn{font-size:8px;color:#6b8499;font-style:italic;padding:4px 0 4px 20px}'+
-  '.it{width:100%;border-top:1px solid #e8ddd0;margin-top:6px;padding-top:6px;border-collapse:collapse}'+
-  '.it td{vertical-align:top;padding:2.5px 0;font-size:8px}'+
-  '.it .k{color:#6b8499;font-weight:700;text-transform:uppercase;font-size:7px;letter-spacing:.5px;width:80px;padding-right:10px}'+
-  '.it .v{color:#1c2b38}'+
-  '.pf{position:absolute;bottom:14px;left:28px;right:28px;display:flex;justify-content:space-between;font-size:7px;color:#6b8499}'+
-  '</style>';
-}
-
-function whoSpan(w){
-  if(w==='m') return '<span class="ev-w ev-wm">Marshal</span>';
-  if(w==='h') return '<span class="ev-w ev-wh">Heidi</span>';
-  if(w==='both') return '<span class="ev-w ev-wb">Both</span>';
+function whoTag(w){
+  if(w==='m') return '<b style="font-size:8px;padding:1px 5px;border-radius:6px;background:rgba(26,77,110,.12);color:#1a4d6e">Marshal</b>';
+  if(w==='h') return '<b style="font-size:8px;padding:1px 5px;border-radius:6px;background:rgba(42,122,90,.12);color:#2a7a5a">Heidi</b>';
+  if(w==='both') return '<b style="font-size:8px;padding:1px 5px;border-radius:6px;background:rgba(106,58,122,.12);color:#6a3a7a">Both</b>';
   return '';
 }
-function evtCls(evt){
+function dotColor(evt){
   var c=(evt.cls||'');
-  if(c.includes('dinner')) return 'c2';
-  if(c.includes('confirmed')) return 'c1';
-  if(c.includes('tbd')) return 'c3';
-  return '';
+  if(c.includes('dinner')) return '#c8703a';
+  if(c.includes('confirmed')) return '#1a4d6e';
+  if(c.includes('tbd')) return '#e8904a';
+  return '#6b8499';
 }
-function buildEvtHTML(evt){
-  if(evt.cls==='connector') return '<div class="ev-cn">&darr; '+stripHTML(evt.label)+'</div>';
-  var h='<div class="ev '+evtCls(evt)+'">';
-  h+='<div class="ev-t">'+stripHTML(evt.title)+whoSpan(evt.who)+'</div>';
-  if(evt.sub) h+='<div class="ev-s">'+stripHTML(evt.sub)+'</div>';
-  if(evt.detail) h+='<div class="ev-d">'+stripHTML(evt.detail)+'</div>';
+function evtHTML(evt){
+  if(evt.cls==='connector') return '<p style="font-size:8px;color:#6b8499;font-style:italic;padding:3px 0 3px 22px">&darr; '+stripHTML(evt.label)+'</p>';
+  var dc=dotColor(evt);
+  var h='<div style="margin:0 0 12px 0;padding:8px 0 8px 22px;border-left:3px solid #e8ddd0;position:relative">';
+  h+='<span style="position:absolute;left:-6px;top:12px;width:9px;height:9px;border-radius:50%;background:'+dc+';display:block"></span>';
+  h+='<div style="font-size:11px;font-weight:700;color:#1c2b38;margin-bottom:2px">'+stripHTML(evt.title)+' '+whoTag(evt.who)+'</div>';
+  if(evt.sub) h+='<div style="font-size:8.5px;color:#6b8499;margin-bottom:2px">'+stripHTML(evt.sub)+'</div>';
+  if(evt.detail) h+='<div style="font-size:8.5px;color:#1c2b38;margin-bottom:3px">'+stripHTML(evt.detail)+'</div>';
   if(evt.exp&&evt.exp.info&&evt.exp.info.length>0){
-    h+='<table class="it">';
+    h+='<table style="width:100%;border-top:1px solid #e8ddd0;margin-top:5px;padding-top:4px;border-collapse:collapse">';
     evt.exp.info.forEach(function(p){
-      h+='<tr><td class="k">'+stripHTML(p[0])+'</td><td class="v">'+stripHTML(p[1])+'</td></tr>';
+      h+='<tr><td style="vertical-align:top;padding:2px 8px 2px 0;font-size:7px;font-weight:700;color:#6b8499;text-transform:uppercase;letter-spacing:.4px;width:80px">'+
+        stripHTML(p[0])+'</td><td style="vertical-align:top;padding:2px 0;font-size:8px;color:#1c2b38">'+stripHTML(p[1])+'</td></tr>';
     });
     h+='</table>';
   }
   h+='</div>';
   return h;
 }
-function buildCoverHTML(){
-  return '<div class="cover">'+
-    '<div class="cover-ey">Trip Itinerary &middot; Summer 2026</div>'+
-    '<h1>Ischia<br><em>a Mare</em></h1>'+
-    '<div class="cover-dt">25 June &ndash; 5 July 2026 &middot; Naples &amp; Forio d\'Ischia, Italy</div>'+
-    '<div class="cover-tr"><div>Marshal Walker &middot; Granada</div><div>Heidi Melbostad &middot; Montreal</div></div>'+
-    '<div class="sbar">'+
-      '<div class="sb"><div class="sb-n">7</div><div class="sb-l">Ischia</div></div>'+
-      '<div class="sb"><div class="sb-n">3</div><div class="sb-l">Naples</div></div>'+
-      '<div class="sb"><div class="sb-n">2</div><div class="sb-l">Ferries</div></div>'+
-      '<div class="sb"><div class="sb-n">10</div><div class="sb-l">Nights</div></div>'+
-    '</div>'+
-    '<div class="cover-ft">pedalonpedaloff.com</div>'+
+function coverHTML(){
+  return '<div style="page-break-after:always;background:#0d1f2d;color:#faf9f7;padding:60px 36px;min-height:100vh;position:relative;font-family:Helvetica,Arial,sans-serif">'+
+  '<div style="font-size:9px;letter-spacing:3px;text-transform:uppercase;color:#4a9fc8;margin-bottom:20px">Trip Itinerary &middot; Summer 2026</div>'+
+  '<div style="font-size:52px;font-weight:700;line-height:1">Ischia</div>'+
+  '<div style="font-size:52px;font-weight:700;font-style:italic;color:#e8904a;line-height:1">a Mare</div>'+
+  '<div style="font-size:12px;color:rgba(200,232,245,.7);margin-top:18px">25 June &ndash; 5 July 2026 &middot; Naples &amp; Forio d\'Ischia, Italy</div>'+
+  '<div style="margin-top:30px;font-size:11px;color:#4a9fc8;line-height:2">Marshal Walker &middot; Granada<br>Heidi Melbostad &middot; Montreal</div>'+
+  '<div style="display:flex;margin-top:40px;background:#1a4d6e;border-radius:6px;overflow:hidden">'+
+    '<div style="flex:1;padding:14px;text-align:center;border-right:1px solid rgba(255,255,255,.08)"><div style="font-size:22px;font-weight:700;color:#fff">7</div><div style="font-size:7px;letter-spacing:2px;text-transform:uppercase;color:rgba(200,232,245,.6);margin-top:2px">ISCHIA</div></div>'+
+    '<div style="flex:1;padding:14px;text-align:center;border-right:1px solid rgba(255,255,255,.08)"><div style="font-size:22px;font-weight:700;color:#fff">3</div><div style="font-size:7px;letter-spacing:2px;text-transform:uppercase;color:rgba(200,232,245,.6);margin-top:2px">NAPLES</div></div>'+
+    '<div style="flex:1;padding:14px;text-align:center;border-right:1px solid rgba(255,255,255,.08)"><div style="font-size:22px;font-weight:700;color:#fff">2</div><div style="font-size:7px;letter-spacing:2px;text-transform:uppercase;color:rgba(200,232,245,.6);margin-top:2px">FERRIES</div></div>'+
+    '<div style="flex:1;padding:14px;text-align:center"><div style="font-size:22px;font-weight:700;color:#fff">10</div><div style="font-size:7px;letter-spacing:2px;text-transform:uppercase;color:rgba(200,232,245,.6);margin-top:2px">NIGHTS</div></div>'+
+  '</div>'+
+  '<div style="position:absolute;bottom:36px;left:36px;font-size:8px;color:rgba(200,232,245,.3)">pedalonpedaloff.com</div>'+
   '</div>';
 }
-
-function buildDayHTML(day,pageNum){
+function dayHTML(day){
   var ss=day.sunset?'&#9728; Sunset '+day.sunset:'';
-  var h='<div class="dp">';
-  h+='<div class="dh"><h2>'+day.date+' &mdash; '+day.name+'</h2><div class="ss">'+ss+'</div></div>';
-  day.events.forEach(function(evt){ h+=buildEvtHTML(evt); });
-  h+='<div class="pf"><span>Ischia 2026 &middot; Marshal &amp; Heidi &middot; pedalonpedaloff.com</span><span>Page '+pageNum+'</span></div>';
+  var h='<div style="page-break-before:always;padding:28px 32px;font-family:Helvetica,Arial,sans-serif">';
+  h+='<div style="background:#1a4d6e;color:#fff;padding:12px 18px;border-radius:6px;display:flex;justify-content:space-between;align-items:center;margin-bottom:22px">';
+  h+='<div style="font-size:14px;font-weight:700">'+day.date+' &mdash; '+day.name+'</div>';
+  h+='<div style="font-size:9px;color:#4a9fc8">'+ss+'</div></div>';
+  day.events.forEach(function(evt){ h+=evtHTML(evt); });
   h+='</div>';
   return h;
 }
-function runPDF(html,filename){
-  var c=document.createElement('div');
-  c.style.cssText='position:fixed;left:-9999px;top:0;width:210mm';
-  c.innerHTML=html;
-  document.body.appendChild(c);
-  html2pdf().set({
-    margin:0,
-    filename:filename,
-    image:{type:'jpeg',quality:0.95},
-    html2canvas:{scale:2,useCORS:true,letterRendering:true},
-    jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},
-    pagebreak:{mode:['css']}
-  }).from(c).save().then(function(){
-    document.body.removeChild(c);
-  });
+function printPDF(html,title){
+  var w=window.open('','_blank');
+  if(!w){alert('Please allow pop-ups to download PDF');return;}
+  w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8">');
+  w.document.write('<title>'+title+'</title>');
+  w.document.write('<style>');
+  w.document.write('@page{margin:0;size:A4 portrait}');
+  w.document.write('*{margin:0;padding:0;box-sizing:border-box}');
+  w.document.write('body{font-family:Helvetica,Arial,sans-serif;-webkit-print-color-adjust:exact;print-color-adjust:exact}');
+  w.document.write('@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}');
+  w.document.write('</style></head><body>');
+  w.document.write(html);
+  w.document.write('</body></html>');
+  w.document.close();
+  setTimeout(function(){w.print();},400);
 }
+
 function generateTripPDF(){
-  var html=pdfCSS()+buildCoverHTML();
-  var pg=2;
-  days.forEach(function(day){ html+=buildDayHTML(day,pg); pg++; });
-  runPDF(html,'Ischia_2026_Full_Itinerary.pdf');
+  var html=coverHTML();
+  days.forEach(function(day){html+=dayHTML(day);});
+  printPDF(html,'Ischia 2026 — Full Itinerary');
 }
+
 function generateDayPDF(di){
   var day=days[di];
   if(!day) return;
-  var html=pdfCSS()+buildDayHTML(day,1);
-  var safeName=day.date.replace(/\s+/g,'_');
-  runPDF(html,'Ischia_'+safeName+'.pdf');
+  printPDF(dayHTML(day).replace('page-break-before:always;',''),'Ischia 2026 — '+day.date);
 }
 
 
