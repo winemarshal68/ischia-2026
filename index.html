@@ -21,20 +21,22 @@
 html{scroll-behavior:smooth;}
 body{background:var(--sand);color:var(--text);font-family:'DM Mono',monospace;font-size:13px;line-height:1.6;}
 
-.hero{background:var(--night);color:var(--white);padding:56px 48px 44px;position:relative;overflow:hidden;}
-.hero::before{content:'';position:absolute;inset:0;
-  background:radial-gradient(ellipse 90% 70% at 75% 110%,rgba(42,109,158,.55) 0%,transparent 55%),
-             radial-gradient(ellipse 50% 40% at 15% 85%,rgba(200,112,58,.28) 0%,transparent 50%);}
-.hero-inner{position:relative;max-width:1140px;margin:0 auto;display:grid;grid-template-columns:1fr auto;gap:24px;align-items:end;}
+.hero{background:var(--night);color:var(--white);padding:80px 48px 56px;position:relative;overflow:hidden;min-height:400px;}
+.hero-bg{position:absolute;inset:0;background:url('./Forio-2024-Beach-View-Shutterstock-1437936044-Hybris.jpg') center/cover no-repeat;z-index:0;}
+.hero::before{content:'';position:absolute;inset:0;z-index:1;
+  background:linear-gradient(180deg,rgba(13,31,45,.55) 0%,rgba(13,31,45,.35) 40%,rgba(13,31,45,.7) 100%),
+             radial-gradient(ellipse 90% 70% at 75% 110%,rgba(42,109,158,.3) 0%,transparent 55%),
+             radial-gradient(ellipse 50% 40% at 15% 85%,rgba(200,112,58,.15) 0%,transparent 50%);}
+.hero-inner{position:relative;z-index:2;max-width:1140px;margin:0 auto;display:grid;grid-template-columns:1fr auto;gap:24px;align-items:end;}
 .hero-eyebrow{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--sea-light);margin-bottom:14px;}
-.hero h1{font-family:'Cormorant Garamond',serif;font-size:clamp(48px,7vw,90px);font-weight:300;line-height:.92;letter-spacing:-.02em;}
+.hero h1{font-family:'Cormorant Garamond',serif;font-size:clamp(48px,7vw,90px);font-weight:300;line-height:.92;letter-spacing:-.02em;text-shadow:0 2px 24px rgba(0,0,0,.5),0 0 60px rgba(0,0,0,.2);}
 .hero h1 em{font-style:italic;color:var(--sunset);}
 .hero-sub{font-size:11px;color:rgba(200,232,245,.65);margin-top:18px;letter-spacing:.06em;}
 .travelers-row{display:flex;gap:10px;margin-top:22px;flex-wrap:wrap;}
-.traveler{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.13);border-radius:30px;padding:5px 13px 5px 5px;font-size:11px;color:var(--white);}
+.traveler{display:flex;align-items:center;gap:8px;background:rgba(13,31,45,.45);border:1px solid rgba(255,255,255,.15);border-radius:30px;padding:5px 13px 5px 5px;font-size:11px;color:var(--white);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);}
 .tdot{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:500;}
 .tdot-m{background:var(--marshal);}.tdot-h{background:var(--heidi);}
-.hero-badge{background:rgba(232,144,74,.15);border:1px solid rgba(232,144,74,.35);border-radius:8px;padding:12px 18px;text-align:right;align-self:start;margin-top:4px;}
+.hero-badge{background:rgba(13,31,45,.55);border:1px solid rgba(232,144,74,.35);border-radius:8px;padding:12px 18px;text-align:right;align-self:start;margin-top:4px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
 .hero-badge-label{font-size:10px;color:rgba(200,232,245,.5);letter-spacing:.1em;text-transform:uppercase;}
 .hero-badge-val{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;color:var(--sunset);line-height:1.1;}
 
@@ -174,7 +176,7 @@ body{background:var(--sand);color:var(--text);font-family:'DM Mono',monospace;fo
 
 @media(max-width:900px){
   .main,.resources-grid,.budget-wrap{grid-template-columns:1fr;padding:24px 20px 60px;}
-  .hero{padding:36px 20px 32px;}.hero-inner{grid-template-columns:1fr;}
+  .hero{padding:48px 20px 40px;min-height:320px;}.hero-inner{grid-template-columns:1fr;}
   .hero-badge{display:none;}.tabs{padding:0 20px;}.budget-wrap{grid-template-columns:1fr;}
 }
 footer{background:var(--night);color:rgba(200,232,245,.35);text-align:center;padding:22px;font-size:11px;letter-spacing:.1em;}
@@ -258,6 +260,7 @@ footer span{color:var(--sunset);}
 </div>
 
 <header class="hero">
+  <div class="hero-bg"></div>
   <div class="hero-inner">
     <div>
       <p class="hero-eyebrow">Trip Itinerary · Summer 2026</p>
