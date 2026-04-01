@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sun & Shade · Pedal On, Pedal Off</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;1,9..40,300&family=Playfair+Display:wght@600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--ink:#1a1a2e;--sea:#1565c0;--sun:#ffb300;--glass:rgba(255,255,255,0.92);--glass-border:rgba(255,255,255,0.35)}
+body{font-family:'DM Sans',sans-serif;background:#0d1b2a;color:var(--ink)}
+#map{position:fixed;inset:0;z-index:1}
+#panel{position:fixed;top:0;left:0;z-index:500;width:340px;height:100vh;background:var(--glass);backdrop-filter:blur(20px) saturate(1.8);-webkit-backdrop-filter:blur(20px) saturate(1.8);border-right:1px solid var(--glass-border);box-shadow:4px 0 30px rgba(0,0,0,0.1);display:flex;flex-direction:column;overflow:hidden;font-size:13px}
+.panel-header{padding:16px 18px 12px;border-bottom:1px solid #e8e8e8;flex-shrink:0}
+.panel-header h2{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:2px}
+.panel-header .sub{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:#888}
+.panel-scroll{flex:1;overflow-y:auto;padding:0}
+.day-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;padding:12px 18px 8px}
+.day-btn{padding:6px 2px;border:1.5px solid #ddd;border-radius:8px;background:#fff;cursor:pointer;text-align:center;font-size:10px;font-weight:500;transition:all .2s;line-height:1.3}
+.day-btn:hover{border-color:var(--sea)}.day-btn.active{background:var(--sea);color:#fff;border-color:var(--sea)}
+.day-btn .dn{font-size:15px;font-weight:700;display:block}
+.time-ctrl{padding:8px 18px 12px;border-bottom:1px solid #e8e8e8}
+.time-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.time-big{font-size:28px;font-weight:700;font-variant-numeric:tabular-nums}
+.sun-info{font-size:11px;color:#666;text-align:right;line-height:1.4}
+#time-slider{width:100%;-webkit-appearance:none;appearance:none;height:7px;border-radius:4px;background:linear-gradient(90deg,#1a237e,#ff8f00 30%,#ffeb3b 50%,#ff8f00 70%,#1a237e);outline:none}
+#time-slider::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:#fff;border:3px solid var(--sun);box-shadow:0 2px 6px rgba(0,0,0,.2);cursor:pointer}
+.sr-ss{display:flex;justify-content:space-between;font-size:10px;color:#999;margin-top:3px}
+.play-row{display:flex;gap:8px;align-items:center;margin-top:8px}
+.play-btn{width:32px;height:32px;border-radius:50%;border:2px solid var(--sea);background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .2s}
+.play-btn:hover,.play-btn.on{background:var(--sea);color:#fff}
+.shade-bar{display:flex;align-items:center;gap:8px;padding:8px 18px;border-bottom:1px solid #e8e8e8;font-size:11px}
+.swatch{width:16px;height:12px;border-radius:3px;border:1px solid rgba(0,0,0,.1)}
+.shade-bar input[type=range]{flex:1;-webkit-appearance:none;appearance:none;height:5px;border-radius:3px;background:linear-gradient(90deg,#e0e0e0,#3355dd);outline:none}
+.shade-bar input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#fff;border:2px solid #333;box-shadow:0 1px 4px rgba(0,0,0,.2);cursor:pointer}
+.bm-btn{padding:4px 8px;border-radius:6px;border:1.5px solid #ccc;background:#fff;font-size:10px;font-weight:600;cursor:pointer;transition:all .2s}
+.bm-btn:hover{border-color:var(--sea)}.bm-btn.on{background:var(--sea);color:#fff;border-color:var(--sea)}
+#shade-status{padding:4px 18px;font-size:10px;color:#999;border-bottom:1px solid #eee}
+.sec-hd{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:#888;padding:12px 18px 6px;position:sticky;top:0;background:var(--glass);z-index:2}
+.sec-hd.day-hd{background:#f0f0f0;font-weight:700;color:#444;padding:10px 18px;font-size:11px;letter-spacing:0.5px;border-top:1px solid #ddd}
+.ev-item{display:flex;gap:10px;padding:8px 18px;cursor:pointer;transition:background .15s;border-bottom:1px solid #f5f5f5;align-items:flex-start}
+.ev-item:hover{background:rgba(21,101,192,.06)}.ev-item.active{background:rgba(21,101,192,.12);border-left:3px solid var(--sea)}
+.ev-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.ev-info{min-width:0;flex:1}.ev-name{font-weight:600;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ev-detail{font-size:10px;color:#888;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ev-time{font-size:10px;color:var(--sea);font-weight:600;margin-top:1px}
+.add-section{padding:12px 18px;border-top:1px solid #ddd;flex-shrink:0;background:#fafafa}
+.add-toggle{width:100%;padding:8px;border:1.5px dashed #ccc;border-radius:10px;background:#fff;cursor:pointer;font-size:12px;font-weight:600;color:#888;transition:all .2s;text-align:center}
+.add-toggle:hover{border-color:var(--sea);color:var(--sea)}
+.add-form{display:none}.add-form.open{display:block}
+.add-form label{display:block;font-size:10px;font-weight:600;color:#666;margin:8px 0 3px;text-transform:uppercase;letter-spacing:.5px}
+.add-form input,.add-form select{width:100%;padding:7px 10px;border:1.5px solid #ddd;border-radius:8px;font-size:12px;font-family:inherit;outline:none}
+.add-form input:focus,.add-form select:focus{border-color:var(--sea)}
+.add-row{display:flex;gap:8px}.add-row>*{flex:1}
+.add-submit{width:100%;padding:10px;margin-top:10px;border:none;border-radius:10px;background:var(--sea);color:#fff;font-weight:700;font-size:13px;cursor:pointer;transition:all .2s}
+.add-submit:hover{background:#0d47a1}
+.back-link{display:block;padding:10px 18px;font-size:11px;color:var(--sea);text-decoration:none;font-weight:600;border-bottom:1px solid #e8e8e8}
+.back-link:hover{background:rgba(21,101,192,.06)}
+.leaflet-popup-content-wrapper{border-radius:14px!important;font-family:'DM Sans',sans-serif!important;box-shadow:0 8px 30px rgba(0,0,0,.18)!important}
+.leaflet-popup-content{margin:12px 16px!important}
+.pop-t{font-weight:700;font-size:13px;margin-bottom:3px}.pop-s{font-size:11px;color:#666}.pop-d{font-size:11px;color:var(--sea);font-weight:600;margin-top:3px}
+.custom-marker{background:none;border:none}
+.mk{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 3px 10px rgba(0,0,0,.3);border:3px solid #fff;position:relative}
+.mk::after{content:'';position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid #fff}
+@media(max-width:700px){#panel{top:auto;bottom:0;left:0;width:100%;height:55vh;border-radius:20px 20px 0 0;border-right:none;border-top:1px solid var(--glass-border)}.day-grid{grid-template-columns:repeat(6,1fr)}}
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div id="panel">
+  <a class="back-link" href="./index.html">← Back to itinerary</a>
+  <div class="panel-header"><h2>☀️ Sun & Shade</h2><div class="sub">Ischia · 25 Jun – 5 Jul 2026</div></div>
+  <div class="day-grid" id="day-grid"></div>
+  <div class="time-ctrl">
+    <div class="time-row"><span class="time-big" id="cur-time">07:00</span><div class="sun-info"><span id="sun-icon">🌅</span> <span id="sun-alt"></span></div></div>
+    <input type="range" id="time-slider" min="240" max="1320" value="420" step="5">
+    <div class="sr-ss"><span id="sr-l">🌅 05:34</span><span id="ss-l">20:32 🌇</span></div>
+    <div class="play-row"><button class="play-btn" id="play-btn" onclick="togglePlay()">▶</button><span style="font-size:11px;color:#888">Animate sunrise → sunset</span></div>
+  </div>
+  <div class="shade-bar"><div class="swatch" style="background:#e8967a;opacity:.6"></div><span>Sun</span><div class="swatch" style="background:#3355dd;opacity:.65"></div><span>Shade</span><input type="range" id="op-slider" min="20" max="90" value="60" step="5"><button class="bm-btn" id="bm-btn" onclick="toggleBM()">Satellite</button></div>
+  <div id="shade-status">● Loading shadows…</div>
+  <div class="sec-hd">Events — click to see sun conditions</div>
+  <div class="panel-scroll" id="ev-list"></div>
+  <div class="add-section">
+    <button class="add-toggle" id="add-toggle" onclick="toggleAddForm()">＋ Add event</button>
+    <div class="add-form" id="add-form">
+      <label>Name</label><input type="text" id="add-name" placeholder="e.g. Lunch at Ristorante Saturnino">
+      <div class="add-row"><div><label>Date</label><select id="add-date"></select></div><div><label>Time</label><input type="time" id="add-time" value="12:00"></div></div>
+      <div class="add-row"><div><label>Icon</label><select id="add-icon"><option>🍽️</option><option>🏖️</option><option>♨️</option><option>🌺</option><option>⛵</option><option>🥾</option><option>🏨</option><option>📍</option></select></div><div><label>Color</label><select id="add-color"><option value="#e65100">Orange</option><option value="#1565c0">Blue</option><option value="#2e7d32">Green</option><option value="#7b1fa2">Purple</option><option value="#c62828">Red</option><option value="#37474f">Dark</option></select></div></div>
+      <label>Location (lat, lng) <span style="font-weight:400;color:#aaa">— or click map</span></label><input type="text" id="add-latlng" placeholder="40.7312, 13.9639">
+      <button class="add-submit" onclick="addEvent()">Add to map</button>
+    </div>
+  </div>
+</div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-shadow-simulator/dist/leaflet-shadow-simulator.umd.min.js"></script>
+<script src="https://unpkg.com/osmtogeojson@3.0.0-beta.5/osmtogeojson.js"></script>
+<script>
+const API_KEY='eyJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6Im1hcnNoYWx3YWxrZXJAZ21haWwuY29tIiwiY3JlYXRlZCI6MTc3NTAzMzYxNTA1MywiaWF0IjoxNzc1MDMzNjE1fQ.-ACPLUA7wm643VUSZy9lmfyv-mkL0SB_NZllZjxA7fc';
+const DAYS=[{d:'2026-06-25',l:'Thu',n:25,mo:'Jun',sr:'05:34',ss:'20:32'},{d:'2026-06-26',l:'Fri',n:26,mo:'Jun',sr:'05:34',ss:'20:32'},{d:'2026-06-27',l:'Sat',n:27,mo:'Jun',sr:'05:34',ss:'20:32'},{d:'2026-06-28',l:'Sun',n:28,mo:'Jun',sr:'05:35',ss:'20:32'},{d:'2026-06-29',l:'Mon',n:29,mo:'Jun',sr:'05:35',ss:'20:32'},{d:'2026-06-30',l:'Tue',n:30,mo:'Jun',sr:'05:36',ss:'20:31'},{d:'2026-07-01',l:'Wed',n:1,mo:'Jul',sr:'05:36',ss:'20:31'},{d:'2026-07-02',l:'Thu',n:2,mo:'Jul',sr:'05:37',ss:'20:31'},{d:'2026-07-03',l:'Fri',n:3,mo:'Jul',sr:'05:37',ss:'20:30'},{d:'2026-07-04',l:'Sat',n:4,mo:'Jul',sr:'05:38',ss:'20:30'},{d:'2026-07-05',l:'Sun',n:5,mo:'Jul',sr:'05:39',ss:'20:29'}];
+let events=[
+  {name:'Palazzo Pandola check-in',icon:'🏨',color:'#ad1457',lat:40.8468,lng:14.2510,date:'2026-06-25',mins:840,detail:'Piazza del Gesù Nuovo · Duplex Suite'},
+  {name:'Ferry · Naples → Forio',icon:'⛴',color:'#0097a7',lat:40.8370,lng:14.2550,date:'2026-06-27',mins:650,detail:'Alilauro · Beverello 10:50 → Forio 12:05'},
+  {name:'Hotel Umberto a Mare check-in',icon:'🏨',color:'#1565c0',lat:40.73698,lng:13.85480,date:'2026-06-27',mins:780,detail:'13:00 · Via Soccorso 2, Forio'},
+  {name:'Dinner · Ristorante Umberto a Mare ★',icon:'🍽️',color:'#ff6f00',lat:40.73698,lng:13.85480,date:'2026-06-27',mins:1185,detail:'19:45 · Terrace · ★ Michelin · confirmed Marco Regine'},
+  {name:'Boat tour · Ischia & Procida',icon:'⛵',color:'#00838f',lat:40.7383,lng:13.8570,date:'2026-06-28',mins:600,detail:'10:00–17:30 · West Coast srl · Gozzo Fratelli Aprea'},
+  {name:'Hike · Monte Epomeo (789m)',icon:'🥾',color:'#2e7d32',lat:40.7270,lng:13.8950,date:'2026-06-29',mins:540,detail:'Via Fontana trail · 3hr round trip · 360° views'},
+  {name:'La Grotta da Fiore · summit lunch',icon:'🍷',color:'#7b1fa2',lat:40.7265,lng:13.8945,date:'2026-06-29',mins:750,detail:'Cave restaurant at summit · rabbit · Biancolella wine'},
+  {name:'Dinner · Ristorante Saturnino ★',icon:'🐟',color:'#283593',lat:40.7383,lng:13.8570,date:'2026-06-30',mins:1170,detail:'19:30 · Forio port · Fish tasting · confirmed'},
+  {name:'Castello Aragonese',icon:'🏰',color:'#6d4c41',lat:40.7312,lng:13.9639,date:'2026-07-01',mins:540,detail:'Arrive 09:00 · 2-3hr visit · Ischia Ponte'},
+  {name:'Lunch · Ristorante Da Ciccio',icon:'🍽️',color:'#e65100',lat:40.7317,lng:13.9600,date:'2026-07-01',mins:750,detail:'12:30 · Via Luigi Mazzella 32 · confirmed Guido'},
+  {name:'Dinner · Ristorante Pietratorcia',icon:'🍷',color:'#6a1b9a',lat:40.7120,lng:13.8680,date:'2026-07-02',mins:1185,detail:'19:45 · Cuotto hills · vineyard · confirmed Vito'},
+  {name:'Check-out · Umberto a Mare',icon:'🏨',color:'#1565c0',lat:40.73698,lng:13.85480,date:'2026-07-04',mins:570,detail:'09:00–10:30'},
+  {name:'Ferry · Forio → Naples',icon:'⛴',color:'#0097a7',lat:40.7383,lng:13.8570,date:'2026-07-04',mins:680,detail:'Alilauro · Forio 11:20 → Beverello 12:20'},
+  {name:'Puro by Unico Relais check-in',icon:'🏨',color:'#ad1457',lat:40.8370,lng:14.2430,date:'2026-07-04',mins:900,detail:'Calata S. Marco 4, Port of Naples'},
+  {name:'La Mortella Gardens',icon:'🌺',color:'#388e3c',lat:40.7383,lng:13.8612,date:null,mins:600,detail:'10-min walk from hotel · concert Thu eve'},
+  {name:'Poseidon Gardens',icon:'♨️',color:'#00838f',lat:40.7155,lng:13.8560,date:null,mins:600,detail:'Thermal park · Forio'},
+  {name:'Negombo',icon:'🌊',color:'#0097a7',lat:40.7470,lng:13.8640,date:null,mins:600,detail:'Thermal beach park · Lacco Ameno'},
+  {name:'Spiaggia di Citara',icon:'🏖️',color:'#ff8f00',lat:40.7150,lng:13.8520,date:null,mins:600,detail:'Beach · near Poseidon · walking distance from hotel'},
+  {name:"Sant'Angelo",icon:'⚓',color:'#37474f',lat:40.6975,lng:13.8950,date:null,mins:600,detail:'Village + water taxi hub'},
+  {name:'Le Fumarole Beach',icon:'🔥',color:'#bf360c',lat:40.6960,lng:13.8920,date:null,mins:720,detail:'Sand-cooked food · Bar Emanuela'},
+];
+let map,shadeMap,sunOverlay,tileLayer,currentDay='2026-06-27',animFrame=null,playing=false;const markers=[];
+function t2m(t){const[h,m]=t.split(':').map(Number);return h*60+m}
+function m2t(m){return`${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`}
+function dayInfo(d){return DAYS.find(x=>x.d===d)||DAYS[2]}
+function sunAlt(dateObj){const lat=40.73*Math.PI/180,doy=Math.floor((dateObj-new Date(dateObj.getFullYear(),0,0))/864e5),dec=23.45*Math.sin(2*Math.PI*(284+doy)/365)*Math.PI/180,hrs=dateObj.getUTCHours()+dateObj.getUTCMinutes()/60,ha=(hrs-12)*15*Math.PI/180;return Math.asin(Math.sin(lat)*Math.sin(dec)+Math.cos(lat)*Math.cos(dec)*Math.cos(ha))*180/Math.PI}
+function buildDayGrid(){const g=document.getElementById('day-grid');g.innerHTML='';DAYS.forEach(d=>{const b=document.createElement('div');b.className='day-btn'+(d.d===currentDay?' active':'');b.innerHTML=`<span class="dn">${d.n}</span>${d.mo}`;b.onclick=()=>selectDay(d.d);g.appendChild(b)})}
+function selectDay(d){currentDay=d;buildDayGrid();updateSunLabels();updateShade()}
+function updateSunLabels(){const d=dayInfo(currentDay);document.getElementById('sr-l').textContent=`🌅 ${d.sr}`;document.getElementById('ss-l').textContent=`${d.ss} 🌇`;const s=document.getElementById('time-slider');s.min=Math.max(0,t2m(d.sr)-60);s.max=Math.min(1440,t2m(d.ss)+60)}
+function updateShade(){const s=document.getElementById('time-slider'),mins=parseInt(s.value),h=Math.floor(mins/60),m=mins%60;const dt=new Date(`${currentDay}T${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:00+02:00`);if(shadeMap)shadeMap.setDate(dt);document.getElementById('cur-time').textContent=m2t(mins);const alt=sunAlt(dt),icon=alt<=0?'🌙':alt<10?'🌅':alt>60?'☀️':'🌤';document.getElementById('sun-icon').textContent=icon;document.getElementById('sun-alt').textContent=alt<=0?'Below horizon':`${alt.toFixed(0)}° · ${alt<20?'long shadows':alt<40?'medium':'short shadows'}`}
+function togglePlay(){const b=document.getElementById('play-btn');if(playing){playing=false;b.textContent='▶';b.classList.remove('on');cancelAnimationFrame(animFrame)}else{playing=true;b.textContent='⏸';b.classList.add('on');anim()}}
+function anim(){if(!playing)return;const s=document.getElementById('time-slider');let v=parseInt(s.value)+5;if(v>parseInt(s.max))v=parseInt(s.min);s.value=v;updateShade();setTimeout(()=>{animFrame=requestAnimationFrame(anim)},150)}
+function syncToEvent(ev){if(ev.date)selectDay(ev.date);document.getElementById('time-slider').value=ev.mins;updateShade();document.querySelectorAll('.ev-item').forEach(el=>el.classList.remove('active'));const idx=events.indexOf(ev);const el=document.querySelector(`[data-idx="${idx}"]`);if(el)el.classList.add('active')}
+function dateFmt(d){if(!d)return'Flexible';const dt=new Date(d+'T12:00:00');return dt.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})}
+function buildEventList(){const list=document.getElementById('ev-list');list.innerHTML='';const dated=events.filter(e=>e.date).sort((a,b)=>a.date===b.date?a.mins-b.mins:a.date.localeCompare(b.date));const undated=events.filter(e=>!e.date);let lastDate=null;dated.forEach(ev=>{if(ev.date!==lastDate){lastDate=ev.date;const hd=document.createElement('div');hd.className='sec-hd day-hd';hd.textContent=dateFmt(ev.date);list.appendChild(hd)}list.appendChild(makeEvEl(ev))});if(undated.length){const hd=document.createElement('div');hd.className='sec-hd day-hd';hd.textContent='📌 Flexible / TBD';list.appendChild(hd);undated.forEach(ev=>list.appendChild(makeEvEl(ev)))}}
+function makeEvEl(ev){const idx=events.indexOf(ev);const el=document.createElement('div');el.className='ev-item';el.dataset.idx=idx;el.innerHTML=`<div class="ev-icon" style="background:${ev.color}18;color:${ev.color}">${ev.icon}</div><div class="ev-info"><div class="ev-name">${ev.name}</div><div class="ev-detail">${ev.detail}</div><div class="ev-time">${ev.date?m2t(ev.mins):'—'}</div></div>`;el.onclick=()=>{const mi=markers[idx];if(mi){map.flyTo([ev.lat,ev.lng],16,{duration:1});mi.openPopup()}syncToEvent(ev)};return el}
+function addMarkers(){markers.length=0;map.eachLayer(l=>{if(l instanceof L.Marker)map.removeLayer(l)});events.forEach((ev,i)=>{const ic=L.divIcon({className:'custom-marker',html:`<div class="mk" style="background:${ev.color}">${ev.icon}</div>`,iconSize:[32,40],iconAnchor:[16,40],popupAnchor:[0,-44]});const m=L.marker([ev.lat,ev.lng],{icon:ic}).addTo(map).bindPopup(`<div class="pop-t">${ev.icon} ${ev.name}</div><div class="pop-s">${ev.detail}</div><div class="pop-d">${ev.date?dateFmt(ev.date)+' · '+m2t(ev.mins):'Flexible'}</div>`);m.on('click',()=>syncToEvent(ev));markers.push(m)})}
+function toggleAddForm(){const f=document.getElementById('add-form'),t=document.getElementById('add-toggle');if(f.classList.contains('open')){f.classList.remove('open');t.style.display=''}else{f.classList.add('open');t.style.display='none';const sel=document.getElementById('add-date');sel.innerHTML='<option value="">Flexible / TBD</option>';DAYS.forEach(d=>{const o=document.createElement('option');o.value=d.d;o.textContent=`${d.l} ${d.n} ${d.mo}`;sel.appendChild(o)})}}
+function addEvent(){const name=document.getElementById('add-name').value.trim();if(!name)return;const date=document.getElementById('add-date').value||null;const time=document.getElementById('add-time').value;const icon=document.getElementById('add-icon').value;const color=document.getElementById('add-color').value;const ll=document.getElementById('add-latlng').value.split(',').map(Number);if(ll.length!==2||isNaN(ll[0]))return alert('Enter lat, lng or click map');events.push({name,icon,color,lat:ll[0],lng:ll[1],date,mins:t2m(time),detail:'Custom event'});addMarkers();buildEventList();toggleAddForm();document.getElementById('add-name').value=''}
+function onMapClick(e){if(document.getElementById('add-form').classList.contains('open'))document.getElementById('add-latlng').value=`${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}`}
+let curBM='light';
+function toggleBM(){const b=document.getElementById('bm-btn');if(!map||!tileLayer)return;map.removeLayer(tileLayer);if(curBM==='light'){curBM='sat';b.textContent='Light Map';b.classList.add('on');tileLayer=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19}).addTo(map)}else{curBM='light';b.textContent='Satellite';b.classList.remove('on');tileLayer=L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{maxZoom:20,subdomains:'abcd'}).addTo(map)}if(sunOverlay){sunOverlay.remove();sunOverlay.addTo(map)}if(shadeMap){shadeMap.remove();shadeMap.addTo(map)}}
+map=L.map('map',{center:[40.727,13.880],zoom:13,zoomControl:false});L.control.zoom({position:'topright'}).addTo(map);
+tileLayer=L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{maxZoom:20,subdomains:'abcd',attribution:'© CARTO · © OSM · Shadow © ShadeMap'}).addTo(map);
+sunOverlay=L.rectangle([[-90,-180],[90,180]],{color:'none',fillColor:'#e8967a',fillOpacity:0.35,interactive:false,pane:'overlayPane'}).addTo(map);
+map.on('click',onMapClick);
+try{const now=new Date(`${currentDay}T07:00:00+02:00`);shadeMap=L.shadeMap({date:now,color:'#3355dd',opacity:0.6,apiKey:API_KEY,terrainSource:{tileSize:256,maxZoom:15,getSourceUrl:({x,y,z})=>`https://s3.amazonaws.com/elevation-tiles-prod/terrarium/${z}/${x}/${y}.png`,getElevation:({r,g,b})=>(r*256+g+b/256)-32768},getFeatures:async()=>{if(map.getZoom()>14){const b=map.getBounds();try{const r=await fetch(`https://overpass-api.de/api/interpreter?data=[out:json][timeout:30];(way["building"](${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()}););out body;>;out skel qt;`);const j=await r.json(),g=osmtogeojson(j);g.features.forEach(f=>{if(!f.properties)f.properties={};if(!f.properties.height)f.properties.height=(f.properties['building:levels']||1)*3.5});return g.features}catch(e){return[]}}return[]}}).addTo(map);shadeMap.on('idle',()=>{const s=document.getElementById('shade-status');if(s)s.textContent=map.getZoom()>14?'● Shadows + buildings active':'● Terrain shadows · zoom in for buildings'})}catch(e){document.getElementById('shade-status').textContent='● Shadow error — try localhost'}
+document.getElementById('time-slider').addEventListener('input',updateShade);
+document.getElementById('op-slider').addEventListener('input',e=>{const v=parseInt(e.target.value)/100;if(shadeMap)try{shadeMap.setOpacity(v)}catch(er){};if(sunOverlay)sunOverlay.setStyle({fillOpacity:v*0.58})});
+addMarkers();buildDayGrid();buildEventList();updateSunLabels();updateShade();
+</script>
+</body>
+</html>
